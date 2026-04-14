@@ -73,6 +73,7 @@ export const useHabits = () => {
 
     if (typeof data.detail === "string") return data.detail;
     if (Array.isArray(data.status)) return data.status.join(" ");
+    if (Array.isArray(data.date)) return data.date.join(" ");
     if (Array.isArray(data.days)) return data.days.join(" ");
     if (Array.isArray(data.name)) return data.name.join(" ");
 
@@ -86,6 +87,13 @@ export const useHabits = () => {
     return selected > today;
   };
 
+  const isTodayDate = (value) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(`${value}T00:00:00`);
+    return selected.getTime() === today.getTime();
+  };
+
   const handleUpdate = async (habitId, date, currentStatus) => {
     if (currentStatus === "skip") {
       return { success: true };
@@ -93,6 +101,14 @@ export const useHabits = () => {
 
     try {
       const newStatus = toggleStatus(currentStatus);
+
+      if (!isTodayDate(date)) {
+        return {
+          success: false,
+          type: "error",
+          message: "You can only update logs for today.",
+        };
+      }
 
       if (newStatus === "done" && isFutureDate(date)) {
         return {

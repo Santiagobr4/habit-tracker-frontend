@@ -15,6 +15,11 @@ export const getTrackerMetrics = async () => {
   return res.data;
 };
 
+export const getLeaderboard = async ({ days = 30 } = {}) => {
+  const res = await api.get(`/habits/leaderboard/?days=${days}`);
+  return res.data;
+};
+
 export const updateLog = async (habitId, date, status) => {
   await api.post("/logs/", { habit: habitId, date, status });
 };

@@ -9,6 +9,7 @@ import SectionTabs from "./components/SectionTabs";
 import WeeklyTable from "./components/WeeklyTable";
 
 const HistoryPanel = lazy(() => import("./components/HistoryPanel"));
+const RankingPanel = lazy(() => import("./components/RankingPanel"));
 const ProfilePanel = lazy(() => import("./components/ProfilePanel"));
 
 function App() {
@@ -100,6 +101,14 @@ function App() {
       return (
         <Suspense fallback={<div>Loading section...</div>}>
           <ProfilePanel onProfileChange={setProfile} />
+        </Suspense>
+      );
+    }
+
+    if (section === "ranking") {
+      return (
+        <Suspense fallback={<div>Loading section...</div>}>
+          <RankingPanel />
         </Suspense>
       );
     }

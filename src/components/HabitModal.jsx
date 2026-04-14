@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { capitalizeDayCode } from "../utils/dateLabels";
 
 const WEEK_DAYS = [
   "monday",
@@ -100,7 +101,7 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
           {WEEK_DAYS.map((day) => (
             <button
               type="button"
@@ -112,7 +113,7 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
                   : "bg-slate-100 dark:bg-slate-800"
               }`}
             >
-              {day.slice(0, 3)}
+              {capitalizeDayCode(day)}
             </button>
           ))}
         </div>

@@ -5,6 +5,7 @@ import HabitModal from "./HabitModal";
 import ConfirmDialog from "./ConfirmDialog";
 import TrackerInsights from "./TrackerInsights";
 import Toast from "./Toast";
+import { getIsoDateLabel, getIsoDayNameLong } from "../utils/dateLabels";
 
 export default function WeeklyTable() {
   const {
@@ -118,51 +119,61 @@ export default function WeeklyTable() {
         </div>
       </div>
 
-      <table className="w-full text-center border-separate border-spacing-y-2">
-        <thead>
-          <tr>
-            <th className="text-left px-3 py-2 min-w-52 text-slate-500 text-sm font-medium">
-              Habit
-            </th>
-
-            {dates.map((d) => (
-              <th
-                key={d}
-                className="w-12 cursor-default text-slate-500 text-sm font-medium py-2"
-              >
-                {d.slice(5)}
+      <div className="overflow-x-auto pb-1">
+        <table className="w-full text-center border-separate border-spacing-y-2 min-w-230">
+          <thead>
+            <tr>
+              <th className="text-left px-3 py-2 min-w-52 text-slate-500 text-sm font-medium">
+                Habit
               </th>
+
+              {dates.map((d) => (
+                <th
+                  key={d}
+                  className="w-16 cursor-default text-slate-500 text-sm font-medium py-2"
+                >
+                  <div className="leading-tight">
+                    <p className="font-semibold text-slate-700 dark:text-slate-200 text-[12px]">
+                      {getIsoDayNameLong(d)}
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      {getIsoDateLabel(d)}
+                    </p>
+                  </div>
+                </th>
+              ))}
+
+              <th className="text-slate-500 text-sm font-medium">Streak</th>
+              <th className="text-slate-500 text-sm font-medium">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.map((habit) => (
+              <HabitRow
+                key={habit.habit_id}
+                habit={habit}
+                dates={dates}
+                onUpdate={async (...args) => {
+                  const result = await handleUpdate(...args);
+                  if (!result?.success) {
+                    setToast({
+                      message:
+                        result?.message || "Could not update habit status",
+                      type: result?.type || "error",
+                    });
+                  }
+                }}
+                onEdit={(h) => {
+                  setEditingHabit(h);
+                  setShowModal(true);
+                }}
+                onDelete={(h) => setDeleteId(h.habit_id)}
+              />
             ))}
-
-            <th className="text-slate-500 text-sm font-medium">Streak</th>
-            <th className="text-slate-500 text-sm font-medium">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((habit) => (
-            <HabitRow
-              key={habit.habit_id}
-              habit={habit}
-              dates={dates}
-              onUpdate={async (...args) => {
-                const result = await handleUpdate(...args);
-                if (!result?.success) {
-                  setToast({
-                    message: result?.message || "Could not update habit status",
-                    type: result?.type || "error",
-                  });
-                }
-              }}
-              onEdit={(h) => {
-                setEditingHabit(h);
-                setShowModal(true);
-              }}
-              onDelete={(h) => setDeleteId(h.habit_id)}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
       {(showModal || editingHabit) && (
         <HabitModal

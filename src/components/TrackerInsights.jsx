@@ -1,10 +1,11 @@
+import CompletionRing from "./CompletionRing";
+import { formatPercent, getCompletionColor } from "../utils/completion";
+import { getIsoDateLabel, getIsoDayNameShort } from "../utils/dateLabels";
+
 const getBarHeight = (value) => {
   if (value === null || value === undefined) return 8;
   return Math.max(8, Math.round((value / 100) * 120));
 };
-
-const formatPercent = (value) =>
-  value === null || value === undefined ? "N/A" : `${value}%`;
 
 export default function TrackerInsights({ metrics }) {
   const daily = metrics?.daily || [];
@@ -21,29 +22,17 @@ export default function TrackerInsights({ metrics }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70">
-          <p className="text-sm text-slate-500 dark:text-slate-300">
-            Today completion
-          </p>
-          <p className="text-2xl font-semibold mt-2">
-            {formatPercent(today?.completion)}
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            {today?.done ?? 0} completed out of {today?.total ?? 0}
-          </p>
-        </div>
+        <CompletionRing
+          value={today?.completion}
+          title="Today completion"
+          subtitle={`${today?.done ?? 0} completed out of ${today?.total ?? 0}`}
+        />
 
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70">
-          <p className="text-sm text-slate-500 dark:text-slate-300">
-            Current week completion
-          </p>
-          <p className="text-2xl font-semibold mt-2">
-            {formatPercent(week?.completion)}
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            {week?.start_date} to {week?.end_date}
-          </p>
-        </div>
+        <CompletionRing
+          value={week?.completion}
+          title="Current week completion"
+          subtitle={`${week?.start_date} to ${week?.end_date}`}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70">
@@ -58,17 +47,24 @@ export default function TrackerInsights({ metrics }) {
             <div key={row.date} className="min-w-10 text-center">
               <div className="h-32 flex items-end justify-center">
                 <div
-                  className={`w-7 rounded-t-md ${
-                    row.completion === null
-                      ? "bg-slate-300 dark:bg-slate-600"
-                      : "bg-slate-900 dark:bg-slate-200"
-                  }`}
+                  className="w-7 rounded-t-md"
                   style={{ height: `${getBarHeight(row.completion)}px` }}
                   title={formatPercent(row.completion)}
-                />
+                  aria-label={`${row.date} ${formatPercent(row.completion)}`}
+                >
+                  <div
+                    className="w-full h-full rounded-t-md"
+                    style={{
+                      backgroundColor: getCompletionColor(row.completion),
+                    }}
+                  />
+                </div>
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                {row.date.slice(5)}
+                {getIsoDayNameShort(row.date)}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                {getIsoDateLabel(row.date)}
               </p>
             </div>
           ))}
