@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { getHistory } from "../api/habits";
 import { getCompletionColor } from "../utils/completion";
+import LoadingSpinner from "./LoadingSpinner";
 
 const RANGE_OPTIONS = [30, 90, 180, 365];
 
@@ -23,20 +24,34 @@ export default function HistoryPanel() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchHistory = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (!isCancelled) {
+          setLoading(true);
+          setError("");
+        }
         const payload = await getHistory({ days });
-        setHistory(payload);
+        if (!isCancelled) {
+          setHistory(payload);
+        }
       } catch {
-        setError("Could not load historical metrics.");
+        if (!isCancelled) {
+          setError("Could not load historical metrics.");
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchHistory();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [days]);
 
   const chartData = useMemo(() => {
@@ -66,7 +81,7 @@ export default function HistoryPanel() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        Loading history...
+        <LoadingSpinner label="Loading history..." />
       </div>
     );
   }

@@ -5,8 +5,10 @@ import {
   getStoredAccessToken,
 } from "./api/auth";
 import AuthPanel from "./components/AuthPanel";
+import LoadingSpinner from "./components/LoadingSpinner";
 import SectionTabs from "./components/SectionTabs";
 import WeeklyTable from "./components/WeeklyTable";
+import defaultAvatar from "./assets/default-avatar.svg";
 
 const HistoryPanel = lazy(() => import("./components/HistoryPanel"));
 const RankingPanel = lazy(() => import("./components/RankingPanel"));
@@ -41,25 +43,39 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const loadProfile = async () => {
       if (!isAuthenticated) {
-        setProfile(null);
+        if (!isCancelled) {
+          setProfile(null);
+        }
         return;
       }
 
       try {
-        setProfileError("");
+        if (!isCancelled) {
+          setProfileError("");
+        }
         const user = await fetchProfile();
-        setProfile(user);
+        if (!isCancelled) {
+          setProfile(user);
+        }
       } catch {
-        clearAuthTokens();
-        setIsAuthenticated(false);
-        setProfile(null);
-        setProfileError("Session expired. Please sign in again.");
+        if (!isCancelled) {
+          clearAuthTokens();
+          setIsAuthenticated(false);
+          setProfile(null);
+          setProfileError("Session expired. Please sign in again.");
+        }
       }
     };
 
     loadProfile();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isAuthenticated]);
 
   const handleAuthenticated = () => {
@@ -83,15 +99,12 @@ function App() {
 
   const displayName =
     profile?.first_name?.trim() || profile?.username || "User";
-  const avatarSrc =
-    profile?.avatar_file_url ||
-    profile?.avatar_url ||
-    "https://via.placeholder.com/48x48.png?text=U";
+  const avatarSrc = profile?.avatar_file_url || defaultAvatar;
 
   const renderSection = () => {
     if (section === "history") {
       return (
-        <Suspense fallback={<div>Loading section...</div>}>
+        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
           <HistoryPanel />
         </Suspense>
       );
@@ -99,7 +112,7 @@ function App() {
 
     if (section === "profile") {
       return (
-        <Suspense fallback={<div>Loading section...</div>}>
+        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
           <ProfilePanel onProfileChange={setProfile} />
         </Suspense>
       );
@@ -107,7 +120,7 @@ function App() {
 
     if (section === "ranking") {
       return (
-        <Suspense fallback={<div>Loading section...</div>}>
+        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
           <RankingPanel />
         </Suspense>
       );
@@ -188,7 +201,9 @@ function App() {
 
             <SectionTabs current={section} onChange={setSection} />
 
-            {renderSection()}
+            <div key={section} className="fade-in">
+              {renderSection()}
+            </div>
           </>
         ) : (
           <AuthPanel onAuthenticated={handleAuthenticated} />

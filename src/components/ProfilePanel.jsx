@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchProfile, getApiErrorMessage, updateProfile } from "../api/auth";
+import defaultAvatar from "../assets/default-avatar.svg";
+import LoadingSpinner from "./LoadingSpinner";
 
 const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
@@ -29,32 +31,55 @@ export default function ProfilePanel({ onProfileChange }) {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [previewObjectUrl, setPreviewObjectUrl] = useState("");
 
   useEffect(() => {
+    let isCancelled = false;
+
     const loadProfile = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (!isCancelled) {
+          setLoading(true);
+          setError("");
+        }
         const profile = await fetchProfile();
         const remoteAvatar = profile.avatar_file_url || "";
-        setForm({
-          first_name: profile.first_name || "",
-          last_name: profile.last_name || "",
-          email: profile.email || "",
-          birth_date: profile.birth_date || "",
-          weight_kg: profile.weight_kg || "",
-          gender: profile.gender || "prefer_not_to_say",
-        });
-        setAvatarPreview(remoteAvatar);
+        if (!isCancelled) {
+          setForm({
+            first_name: profile.first_name || "",
+            last_name: profile.last_name || "",
+            email: profile.email || "",
+            birth_date: profile.birth_date || "",
+            weight_kg: profile.weight_kg || "",
+            gender: profile.gender || "prefer_not_to_say",
+          });
+          setAvatarPreview(remoteAvatar);
+        }
       } catch (requestError) {
-        setError(getApiErrorMessage(requestError, "Could not load profile."));
+        if (!isCancelled) {
+          setError(getApiErrorMessage(requestError, "Could not load profile."));
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadProfile();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+      }
+    };
+  }, [previewObjectUrl]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -64,6 +89,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
     try {
       let payload;
+      const shouldReloadAfterSave = Boolean(avatarFile || removeAvatar);
 
       if (avatarFile) {
         const multipart = new FormData();
@@ -98,6 +124,10 @@ export default function ProfilePanel({ onProfileChange }) {
       setRemoveAvatar(false);
       setAvatarPreview(updatedProfile.avatar_file_url || "");
       onProfileChange?.(updatedProfile);
+
+      if (shouldReloadAfterSave) {
+        window.location.reload();
+      }
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Could not update profile."));
     } finally {
@@ -108,7 +138,7 @@ export default function ProfilePanel({ onProfileChange }) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        Loading profile...
+        <LoadingSpinner label="Loading profile..." />
       </div>
     );
   }
@@ -120,9 +150,7 @@ export default function ProfilePanel({ onProfileChange }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60">
           <img
-            src={
-              avatarPreview || "https://via.placeholder.com/80x80.png?text=User"
-            }
+            src={avatarPreview || defaultAvatar}
             alt="Profile"
             className="w-20 h-20 rounded-full object-cover border border-slate-300 dark:border-slate-600"
           />
@@ -158,7 +186,12 @@ export default function ProfilePanel({ onProfileChange }) {
 
                   setAvatarFile(file);
                   setRemoveAvatar(false);
-                  setAvatarPreview(URL.createObjectURL(file));
+                  if (previewObjectUrl) {
+                    URL.revokeObjectURL(previewObjectUrl);
+                  }
+                  const url = URL.createObjectURL(file);
+                  setPreviewObjectUrl(url);
+                  setAvatarPreview(url);
                 }}
                 className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2"
               />
@@ -170,6 +203,10 @@ export default function ProfilePanel({ onProfileChange }) {
                 setAvatarFile(null);
                 setRemoveAvatar(true);
                 setAvatarPreview("");
+                if (previewObjectUrl) {
+                  URL.revokeObjectURL(previewObjectUrl);
+                  setPreviewObjectUrl("");
+                }
               }}
               className="w-full sm:w-auto px-3 py-2 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
             >

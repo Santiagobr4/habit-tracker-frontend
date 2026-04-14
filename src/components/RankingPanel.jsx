@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getLeaderboard } from "../api/habits";
 import { formatPercent, getCompletionTailwindClass } from "../utils/completion";
+import LoadingSpinner from "./LoadingSpinner";
+import defaultAvatar from "../assets/default-avatar.svg";
 
 const RANGE_OPTIONS = [30, 90, 180];
 
@@ -12,27 +14,41 @@ export default function RankingPanel() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isCancelled = false;
+
     const loadRanking = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (!isCancelled) {
+          setLoading(true);
+          setError("");
+        }
         const payload = await getLeaderboard({ days });
-        setRanking(payload.results || []);
-        setRange(payload.range || null);
+        if (!isCancelled) {
+          setRanking(payload.results || []);
+          setRange(payload.range || null);
+        }
       } catch {
-        setError("Could not load ranking.");
+        if (!isCancelled) {
+          setError("Could not load ranking.");
+        }
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadRanking();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [days]);
 
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        Loading ranking...
+        <LoadingSpinner label="Loading ranking..." />
       </div>
     );
   }
@@ -78,7 +94,9 @@ export default function RankingPanel() {
             <tr className="text-slate-500 text-sm border-b border-slate-200 dark:border-slate-700">
               <th className="py-2">#</th>
               <th className="py-2">User</th>
-              <th className="py-2">Average completion</th>
+              <th className="py-2">Daily</th>
+              <th className="py-2">Weekly</th>
+              <th className="py-2">Monthly</th>
               <th className="py-2">Active days</th>
             </tr>
           </thead>
@@ -92,10 +110,7 @@ export default function RankingPanel() {
                 <td className="py-3">
                   <div className="flex items-center gap-3">
                     <img
-                      src={
-                        row.avatar_file_url ||
-                        "https://via.placeholder.com/40x40.png?text=U"
-                      }
+                      src={row.avatar_file_url || defaultAvatar}
                       alt={row.display_name}
                       className="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-600"
                     />
@@ -108,9 +123,19 @@ export default function RankingPanel() {
                   </div>
                 </td>
                 <td
-                  className={`py-3 font-semibold ${getCompletionTailwindClass(row.average_completion)}`}
+                  className={`py-3 font-semibold ${getCompletionTailwindClass(row.daily_completion)}`}
                 >
-                  {formatPercent(row.average_completion)}
+                  {formatPercent(row.daily_completion)}
+                </td>
+                <td
+                  className={`py-3 font-semibold ${getCompletionTailwindClass(row.weekly_completion)}`}
+                >
+                  {formatPercent(row.weekly_completion)}
+                </td>
+                <td
+                  className={`py-3 font-semibold ${getCompletionTailwindClass(row.monthly_completion)}`}
+                >
+                  {formatPercent(row.monthly_completion)}
                 </td>
                 <td className="py-3">{row.active_days}</td>
               </tr>

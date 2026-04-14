@@ -6,6 +6,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import TrackerInsights from "./TrackerInsights";
 import Toast from "./Toast";
 import { getIsoDateLabel, getIsoDayNameLong } from "../utils/dateLabels";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function WeeklyTable() {
   const {
@@ -29,7 +30,7 @@ export default function WeeklyTable() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        Loading habits...
+        <LoadingSpinner label="Loading habits..." />
       </div>
     );
   }
