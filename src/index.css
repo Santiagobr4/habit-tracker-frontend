@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Enable manual dark mode switching. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  letter-spacing: 0.01em;
+}
