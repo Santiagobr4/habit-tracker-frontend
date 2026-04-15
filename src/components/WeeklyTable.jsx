@@ -17,6 +17,7 @@ export default function WeeklyTable() {
     loading,
     refreshing,
     error,
+    canGoPrev,
     canGoNext,
     changeWeek,
     goToCurrentWeek,
@@ -30,6 +31,7 @@ export default function WeeklyTable() {
   const [editingHabit, setEditingHabit] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [toast, setToast] = useState(null);
+  const canManageHabits = new Date().getDay() === 0;
 
   if (loading) {
     return (
@@ -91,59 +93,73 @@ export default function WeeklyTable() {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-        <h2 className="text-xl font-semibold">Weekly tracking</h2>
+    <div className="rounded-3xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm overflow-hidden">
+      <div className="mb-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-linear-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 p-4">
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+              Tracker
+            </p>
+            <h2 className="text-xl font-semibold mt-1">Weekly tracking</h2>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {refreshing && (
-            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/70">
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-slate-700 dark:border-slate-600 dark:border-t-slate-200 animate-spin" />
-              <span className="text-xs text-slate-500 dark:text-slate-300">
-                Updating...
-              </span>
+          <div className="flex items-center gap-2">
+            {refreshing && (
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70">
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-slate-700 dark:border-slate-600 dark:border-t-slate-200 animate-spin" />
+                <span className="text-xs text-slate-500 dark:text-slate-300">
+                  Updating...
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                setEditingHabit(null);
+                setShowModal(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 cursor-pointer"
+            >
+              New habit
+            </button>
+
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-out ${canGoNext ? "max-w-40 opacity-100 translate-x-0" : "max-w-0 opacity-0 -translate-x-2 pointer-events-none"}`}
+            >
+              <button
+                onClick={goToCurrentWeek}
+                className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap"
+              >
+                Current week
+              </button>
             </div>
-          )}
 
-          <button
-            onClick={() => {
-              setEditingHabit(null);
-              setShowModal(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 cursor-pointer"
-          >
-            New habit
-          </button>
-
-          <button
-            onClick={goToCurrentWeek}
-            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
-          >
-            Current week
-          </button>
-
-          <div className="flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/70 dark:bg-slate-800/70">
-            <button
-              onClick={() => changeWeek(-1)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
-            >
-              ←
-            </button>
-
-            <button
-              onClick={() => changeWeek(1)}
-              disabled={!canGoNext}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              →
-            </button>
+            <div className="flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/70 dark:bg-slate-800/70">
+              <button
+                onClick={() => changeWeek(-1)}
+                disabled={!canGoPrev}
+                title={
+                  canGoPrev
+                    ? "Go to previous week"
+                    : "You cannot go before your registration week"
+                }
+                aria-label={
+                  canGoPrev
+                    ? "Go to previous week"
+                    : "Previous week disabled before registration week"
+                }
+                className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ←
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <p className="text-sm text-slate-500 dark:text-slate-300 mb-3">
-        Week starting {startDate}
-      </p>
+        <p className="text-sm text-slate-500 dark:text-slate-300 mt-3">
+          Week starting {startDate}
+        </p>
+      </div>
 
       <div
         className={`transition-opacity duration-200 ${refreshing ? "opacity-65" : "opacity-100"}`}
@@ -183,6 +199,7 @@ export default function WeeklyTable() {
                   key={habit.habit_id}
                   habit={habit}
                   dates={dates}
+                  canManageHabits={canManageHabits}
                   onUpdate={async (...args) => {
                     const result = await handleUpdate(...args);
                     if (!result?.success) {
@@ -194,10 +211,28 @@ export default function WeeklyTable() {
                     }
                   }}
                   onEdit={(h) => {
+                    if (!canManageHabits) {
+                      setToast({
+                        message:
+                          "You can only edit or delete habits on Sunday.",
+                        type: "error",
+                      });
+                      return;
+                    }
                     setEditingHabit(h);
                     setShowModal(true);
                   }}
-                  onDelete={(h) => setDeleteId(h.habit_id)}
+                  onDelete={(h) => {
+                    if (!canManageHabits) {
+                      setToast({
+                        message:
+                          "You can only edit or delete habits on Sunday.",
+                        type: "error",
+                      });
+                      return;
+                    }
+                    setDeleteId(h.habit_id);
+                  }}
                 />
               ))}
             </tbody>

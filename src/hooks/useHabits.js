@@ -23,6 +23,16 @@ const getWeekStart = () => {
   return toLocalIsoDate(now);
 };
 
+const getWeekStartFromIsoDate = (isoDate) => {
+  if (!isoDate) return null;
+  const date = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  const day = date.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diffToMonday);
+  return toLocalIsoDate(date);
+};
+
 export const useHabits = () => {
   const [data, setData] = useState([]);
   const [dates, setDates] = useState([]);
@@ -33,6 +43,11 @@ export const useHabits = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const firstLoadRef = useRef(true);
+  const minimumWeekStart = getWeekStartFromIsoDate(
+    trackerMetrics?.baseline_date,
+  );
+  const canGoPrev = minimumWeekStart ? startDate > minimumWeekStart : true;
+  const canGoNext = startDate < getWeekStart();
 
   const fetchData = useCallback(async () => {
     try {
@@ -78,15 +93,29 @@ export const useHabits = () => {
       return;
     }
 
+    if (dir < 0 && minimumWeekStart && startDate <= minimumWeekStart) {
+      return;
+    }
+
     d.setDate(d.getDate() + dir * 7);
-    setStartDate(toLocalIsoDate(d));
+    const nextStartDate = toLocalIsoDate(d);
+
+    if (nextStartDate > currentWeekStart) {
+      setStartDate(currentWeekStart);
+      return;
+    }
+
+    if (minimumWeekStart && nextStartDate < minimumWeekStart) {
+      setStartDate(minimumWeekStart);
+      return;
+    }
+
+    setStartDate(nextStartDate);
   };
 
   const goToCurrentWeek = () => {
     setStartDate(getWeekStart());
   };
-
-  const canGoNext = startDate < getWeekStart();
 
   const toggleStatus = (current) => {
     if (current === "pending") return "done";
@@ -206,6 +235,7 @@ export const useHabits = () => {
     loading,
     refreshing,
     error,
+    canGoPrev,
     canGoNext,
 
     changeWeek,

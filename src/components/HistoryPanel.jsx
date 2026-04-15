@@ -16,6 +16,113 @@ import LoadingSpinner from "./LoadingSpinner";
 
 const RANGE_OPTIONS = [30, 90, 180, 365];
 
+const buildHistoryInsights = (history, days) => {
+  if (!history) return [];
+
+  const validDaily = (history.daily || []).filter(
+    (row) => row && row.completion !== null && row.completion !== undefined,
+  );
+  const values = validDaily.map((row) => row.completion);
+  if (values.length === 0) {
+    return [
+      {
+        tone: "neutral",
+        title: "You are just getting started",
+        text: "Keep logging a few more days and this space will turn into guidance you can actually use.",
+      },
+    ];
+  }
+
+  const thresholds =
+    days <= 30
+      ? { high: 80, medium: 60 }
+      : days <= 90
+        ? { high: 75, medium: 55 }
+        : days <= 180
+          ? { high: 70, medium: 50 }
+          : { high: 68, medium: 48 };
+
+  const average =
+    values.reduce((acc, value) => acc + value, 0) / Math.max(values.length, 1);
+  const weakDays = values.filter((value) => value < 50).length;
+  const weakDayRatio = weakDays / Math.max(values.length, 1);
+  const bestDay = validDaily.reduce(
+    (best, row) =>
+      best === null || (row.completion ?? -1) > (best.completion ?? -1)
+        ? row
+        : best,
+    null,
+  );
+
+  let trend = "flat";
+  if (values.length >= 2) {
+    trend = values[values.length - 1] > values[0] ? "up" : "down";
+    if (values[values.length - 1] === values[0]) trend = "flat";
+  }
+
+  const cards = [];
+
+  if (average >= thresholds.high) {
+    cards.push({
+      tone: "good",
+      title: "Strong consistency",
+      text: "You are doing great for this time window. Keep this rhythm simple and protect the habits that already feel natural.",
+    });
+  } else if (average >= thresholds.medium) {
+    cards.push({
+      tone: "neutral",
+      title: "You have a solid base",
+      text: "You are close to your next level. One extra completed habit on your weaker days can move this up fast.",
+    });
+  } else {
+    cards.push({
+      tone: "warn",
+      title: "Momentum still building",
+      text: "This is the phase where small wins matter most. Lower the bar on hard days and protect your streak first.",
+    });
+  }
+
+  if (trend === "up") {
+    cards.push({
+      tone: "good",
+      title: "Trend is improving",
+      text: `Your completion improved in this ${days}-day view. Keep repeating what worked recently; consistency beats intensity here.`,
+    });
+  } else if (trend === "down") {
+    cards.push({
+      tone: "warn",
+      title: "There is a small dip to fix",
+      text: `Your completion dipped in this ${days}-day view. Reset with one non-negotiable habit per day, then build back up.`,
+    });
+  }
+
+  if (weakDays > 0) {
+    cards.push({
+      tone: weakDayRatio >= 0.35 ? "warn" : "neutral",
+      title: `${weakDays} low-completion day${weakDays === 1 ? "" : "s"}`,
+      text:
+        weakDayRatio >= 0.35
+          ? "Your biggest opportunity is protecting low days with a lighter backup version of your routine."
+          : "A few low days showed up. Plan your fallback routine now so those days do not break momentum.",
+    });
+  } else if (bestDay) {
+    cards.push({
+      tone: "good",
+      title: `Best day: ${bestDay.date}`,
+      text: "You already proved what works. Recreate the same schedule and environment from that day this week.",
+    });
+  }
+
+  return cards.slice(0, 3);
+};
+
+const historyInsightTone = {
+  good: "border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/80 dark:bg-emerald-950/20",
+  warn: "border-amber-200 dark:border-amber-800/70 bg-amber-50/80 dark:bg-amber-950/20",
+  neutral:
+    "border-slate-200 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-800/70",
+};
+
 const useElementWidth = () => {
   const containerRef = useRef(null);
   const [width, setWidth] = useState(0);
@@ -113,6 +220,11 @@ export default function HistoryPanel() {
     (history?.weekly || []).some((row) => row.completion !== null) ||
     (history?.monthly || []).some((row) => row.completion !== null);
 
+  const historyInsights = useMemo(
+    () => buildHistoryInsights(history, days),
+    [history, days],
+  );
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
@@ -131,26 +243,39 @@ export default function HistoryPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <h2 className="text-xl font-semibold">History & Analytics</h2>
+      <div className="rounded-3xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm overflow-hidden">
+        <div className="mb-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-linear-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 p-4">
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+                History
+              </p>
+              <h2 className="text-xl font-semibold mt-1">
+                History & Analytics
+              </h2>
+            </div>
 
-          <div className="inline-flex rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/70 dark:bg-slate-800/80">
-            {RANGE_OPTIONS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setDays(option)}
-                className={`px-3 py-1.5 rounded-lg text-sm transition cursor-pointer ${
-                  days === option
-                    ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900"
-                    : "text-slate-600 dark:text-slate-300"
-                }`}
-              >
-                {option}d
-              </button>
-            ))}
+            <div className="inline-flex rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/70 dark:bg-slate-800/80">
+              {RANGE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setDays(option)}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition cursor-pointer ${
+                    days === option
+                      ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900"
+                      : "text-slate-600 dark:text-slate-300"
+                  }`}
+                >
+                  {option}d
+                </button>
+              ))}
+            </div>
           </div>
+
+          <p className="text-sm text-slate-500 dark:text-slate-300 mt-3">
+            Insights based on your selected range.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
@@ -281,6 +406,28 @@ export default function HistoryPanel() {
                 </BarChart>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 p-4">
+          <div className="flex flex-wrap items-end justify-between gap-2 mb-3">
+            <h3 className="font-semibold">Insights</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-300">
+              Tuned for {days}d window
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {historyInsights.map((insight) => (
+              <div
+                key={`${insight.title}-${insight.text}`}
+                className={`rounded-xl border p-3 ${historyInsightTone[insight.tone]}`}
+              >
+                <p className="text-sm font-semibold">{insight.title}</p>
+                <p className="text-sm mt-2 leading-6 opacity-90">
+                  {insight.text}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

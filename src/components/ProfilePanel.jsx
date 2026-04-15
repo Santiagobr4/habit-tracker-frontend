@@ -155,7 +155,12 @@ export default function ProfilePanel({ onProfileChange }) {
 
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-5">Profile</h2>
+      <div className="mb-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-linear-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 p-4">
+        <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+          Profile
+        </p>
+        <h2 className="text-xl font-semibold mt-1">Profile settings</h2>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60">

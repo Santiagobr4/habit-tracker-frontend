@@ -1,6 +1,13 @@
 import TableCell from "./TableCell";
 
-export default function HabitRow({ habit, dates, onUpdate, onEdit, onDelete }) {
+export default function HabitRow({
+  habit,
+  dates,
+  onUpdate,
+  onEdit,
+  onDelete,
+  canManageHabits = true,
+}) {
   return (
     <tr className="bg-white/70 dark:bg-slate-800/60 rounded-xl">
       <td className="text-left px-3 py-3 font-medium min-w-52">
@@ -29,16 +36,26 @@ export default function HabitRow({ habit, dates, onUpdate, onEdit, onDelete }) {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => onEdit(habit)}
-            className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-            title="Edit"
+            disabled={!canManageHabits}
+            className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title={
+              canManageHabits
+                ? "Edit"
+                : "You can only edit or delete habits on Sunday"
+            }
           >
             Edit
           </button>
 
           <button
             onClick={() => onDelete(habit)}
-            className="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
-            title="Delete"
+            disabled={!canManageHabits}
+            className="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title={
+              canManageHabits
+                ? "Delete"
+                : "You can only edit or delete habits on Sunday"
+            }
           >
             Delete
           </button>
