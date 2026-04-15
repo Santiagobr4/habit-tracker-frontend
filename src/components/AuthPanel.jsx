@@ -19,6 +19,41 @@ export default function AuthPanel({ onAuthenticated }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const metrics = [
+    { label: "Daily", value: "Focus" },
+    { label: "Weekly", value: "Rhythm" },
+    { label: "Monthly", value: "Progress" },
+  ];
+
+  const heroContent = (
+    <>
+      <div>
+        <p className="text-xs uppercase tracking-[0.22em] text-slate-300">
+          Habit Tracker
+        </p>
+        <h2 className="mt-4 text-3xl md:text-4xl font-semibold leading-tight">
+          Build routines that actually stick.
+        </h2>
+        <p className="mt-4 text-slate-200/90 max-w-xl">
+          Track your day, review your week, and improve your consistency with
+          clear insights.
+        </p>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {metrics.map((metric) => (
+          <div
+            key={metric.label}
+            className="rounded-xl border border-white/20 bg-white/10 p-3"
+          >
+            <p className="text-lg font-semibold">{metric.label}</p>
+            <p className="text-xs text-slate-300 mt-1">{metric.value}</p>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
   const onLogin = async (event) => {
     event.preventDefault();
     setSubmitting(true);
@@ -63,133 +98,186 @@ export default function AuthPanel({ onAuthenticated }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md">
-      <div className="flex gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => {
-            setMode("login");
-            setError("");
-          }}
-          className={`px-4 py-2 rounded-lg cursor-pointer ${
-            mode === "login"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-700"
-          }`}
-        >
-          Login
-        </button>
+    <div className="max-w-5xl mx-auto rounded-3xl border border-slate-200/80 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 shadow-sm overflow-hidden">
+      <div className="grid lg:grid-cols-2 lg:items-stretch">
+        <div className="relative hidden lg:flex flex-col h-full min-h-140 p-8 bg-linear-to-br from-slate-900 to-slate-700 text-white">
+          <div className="flex h-full flex-col justify-between">
+            {heroContent}
+          </div>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setMode("register");
-            setError("");
-          }}
-          className={`px-4 py-2 rounded-lg cursor-pointer ${
-            mode === "register"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-700"
-          }`}
-        >
-          Register
-        </button>
+        <div className="p-6 md:p-8">
+          <div className="lg:hidden mb-5 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-700 bg-linear-to-br from-slate-900 to-slate-700 text-white p-5 shadow-sm">
+            {heroContent}
+          </div>
+
+          <div className="inline-flex rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/80 dark:bg-slate-800/80 mb-6 transition-all duration-300 ease-out">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("login");
+                setError("");
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
+                mode === "login"
+                  ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900"
+                  : "text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              Login
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMode("register");
+                setError("");
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
+                mode === "register"
+                  ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900"
+                  : "text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+
+          <div
+            key={mode}
+            className="fade-in motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out"
+          >
+            <h3 className="text-2xl font-semibold tracking-tight mb-1">
+              {mode === "login" ? "Welcome back" : "Create your account"}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-300 mb-6">
+              {mode === "login"
+                ? "Sign in to continue tracking your habits."
+                : "Start building better habits today."}
+            </p>
+
+            {mode === "login" ? (
+              <form onSubmit={onLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. santi"
+                    required
+                    value={loginForm.username}
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        username: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-black dark:text-white outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Your password"
+                    required
+                    value={loginForm.password}
+                    onChange={(event) =>
+                      setLoginForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-black dark:text-white outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 disabled:opacity-50 cursor-pointer font-medium"
+                >
+                  {submitting ? "Signing in..." : "Sign in"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={onRegister} className="space-y-4">
+                <div>
+                  <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Choose a username"
+                    required
+                    value={registerForm.username}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        username: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-black dark:text-white outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    value={registerForm.email}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-black dark:text-white outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="At least 8 characters"
+                    required
+                    minLength={8}
+                    value={registerForm.password}
+                    onChange={(event) =>
+                      setRegisterForm((prev) => ({
+                        ...prev,
+                        password: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2.5 text-black dark:text-white outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 disabled:opacity-50 cursor-pointer font-medium"
+                >
+                  {submitting ? "Creating account..." : "Create account"}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
+        </div>
       </div>
-
-      {mode === "login" ? (
-        <form onSubmit={onLogin} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            required
-            value={loginForm.username}
-            onChange={(event) =>
-              setLoginForm((prev) => ({
-                ...prev,
-                username: event.target.value,
-              }))
-            }
-            className="w-full p-2 border rounded text-black dark:text-white dark:bg-gray-700"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={loginForm.password}
-            onChange={(event) =>
-              setLoginForm((prev) => ({
-                ...prev,
-                password: event.target.value,
-              }))
-            }
-            className="w-full p-2 border rounded text-black dark:text-white dark:bg-gray-700"
-          />
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
-          >
-            {submitting ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={onRegister} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            required
-            value={registerForm.username}
-            onChange={(event) =>
-              setRegisterForm((prev) => ({
-                ...prev,
-                username: event.target.value,
-              }))
-            }
-            className="w-full p-2 border rounded text-black dark:text-white dark:bg-gray-700"
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={registerForm.email}
-            onChange={(event) =>
-              setRegisterForm((prev) => ({
-                ...prev,
-                email: event.target.value,
-              }))
-            }
-            className="w-full p-2 border rounded text-black dark:text-white dark:bg-gray-700"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            minLength={8}
-            value={registerForm.password}
-            onChange={(event) =>
-              setRegisterForm((prev) => ({
-                ...prev,
-                password: event.target.value,
-              }))
-            }
-            className="w-full p-2 border rounded text-black dark:text-white dark:bg-gray-700"
-          />
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
-          >
-            {submitting ? "Creating account..." : "Create account"}
-          </button>
-        </form>
-      )}
-
-      {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
     </div>
   );
 }

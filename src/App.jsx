@@ -19,6 +19,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!getStoredAccessToken(),
   );
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState("");
   const [section, setSection] = useState("tracker");
@@ -86,6 +87,7 @@ function App() {
     clearAuthTokens();
     setIsAuthenticated(false);
     setProfile(null);
+    setShowLogoutConfirm(false);
   };
 
   const themeButtonClass = (mode) => {
@@ -100,6 +102,11 @@ function App() {
   const displayName =
     profile?.first_name?.trim() || profile?.username || "User";
   const avatarSrc = profile?.avatar_file_url || defaultAvatar;
+  const todayLabel = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "long",
+    day: "numeric",
+  }).format(new Date());
 
   const renderSection = () => {
     if (section === "history") {
@@ -191,12 +198,17 @@ function App() {
                 </div>
               </div>
 
-              <button
-                onClick={handleLogout}
-                className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-              >
-                Logout
-              </button>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-slate-500 dark:text-slate-300">
+                  {todayLabel}
+                </p>
+                <button
+                  onClick={() => setShowLogoutConfirm(true)}
+                  className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
 
             <SectionTabs current={section} onChange={setSection} />
@@ -204,6 +216,33 @@ function App() {
             <div key={section} className="fade-in">
               {renderSection()}
             </div>
+
+            {showLogoutConfirm && (
+              <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+                <div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xl">
+                  <h3 className="text-lg font-semibold">Confirm logout</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
+                    Are you sure you want to close your session?
+                  </p>
+                  <div className="mt-5 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowLogoutConfirm(false)}
+                      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                    >
+                      Yes, logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <AuthPanel onAuthenticated={handleAuthenticated} />

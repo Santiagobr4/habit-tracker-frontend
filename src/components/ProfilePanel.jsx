@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchProfile, getApiErrorMessage, updateProfile } from "../api/auth";
 import defaultAvatar from "../assets/default-avatar.svg";
 import LoadingSpinner from "./LoadingSpinner";
@@ -30,8 +30,14 @@ export default function ProfilePanel({ onProfileChange }) {
   const [success, setSuccess] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [persistedAvatarPreview, setPersistedAvatarPreview] = useState("");
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [hasCustomAvatar, setHasCustomAvatar] = useState(false);
   const [previewObjectUrl, setPreviewObjectUrl] = useState("");
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -53,7 +59,9 @@ export default function ProfilePanel({ onProfileChange }) {
             weight_kg: profile.weight_kg || "",
             gender: profile.gender || "prefer_not_to_say",
           });
+          setPersistedAvatarPreview(remoteAvatar);
           setAvatarPreview(remoteAvatar);
+          setHasCustomAvatar(Boolean(remoteAvatar));
         }
       } catch (requestError) {
         if (!isCancelled) {
@@ -65,7 +73,6 @@ export default function ProfilePanel({ onProfileChange }) {
         }
       }
     };
-
     loadProfile();
 
     return () => {
@@ -81,15 +88,13 @@ export default function ProfilePanel({ onProfileChange }) {
     };
   }, [previewObjectUrl]);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const saveProfile = async () => {
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
       let payload;
-      const shouldReloadAfterSave = Boolean(avatarFile || removeAvatar);
 
       if (avatarFile) {
         const multipart = new FormData();
@@ -122,17 +127,22 @@ export default function ProfilePanel({ onProfileChange }) {
       setSuccess("Profile updated successfully.");
       setAvatarFile(null);
       setRemoveAvatar(false);
-      setAvatarPreview(updatedProfile.avatar_file_url || "");
+      const nextAvatar = updatedProfile.avatar_file_url || "";
+      setPersistedAvatarPreview(nextAvatar);
+      setAvatarPreview(nextAvatar);
+      setHasCustomAvatar(Boolean(nextAvatar));
       onProfileChange?.(updatedProfile);
-
-      if (shouldReloadAfterSave) {
-        window.location.reload();
-      }
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Could not update profile."));
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (saving) return;
+    setShowSaveConfirm(true);
   };
 
   if (loading) {
@@ -155,63 +165,69 @@ export default function ProfilePanel({ onProfileChange }) {
             className="w-20 h-20 rounded-full object-cover border border-slate-300 dark:border-slate-600"
           />
 
-          <div className="flex-1 space-y-2">
-            <div>
-              <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                Upload photo (JPG, PNG, WEBP - max 2MB)
-              </label>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => {
-                  setError("");
-                  setSuccess("");
-                  const file = event.target.files?.[0];
-                  if (!file) {
-                    setAvatarFile(null);
-                    return;
-                  }
+          <div className="flex-1">
+            <p className="text-sm text-slate-500 dark:text-slate-300">
+              JPG, PNG or WEBP. Max 2MB.
+            </p>
 
-                  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-                    setError("Avatar must be a JPG, PNG, or WEBP image.");
-                    event.target.value = "";
-                    return;
-                  }
-
-                  if (file.size > MAX_IMAGE_BYTES) {
-                    setError("Avatar image must be 2MB or smaller.");
-                    event.target.value = "";
-                    return;
-                  }
-
-                  setAvatarFile(file);
-                  setRemoveAvatar(false);
-                  if (previewObjectUrl) {
-                    URL.revokeObjectURL(previewObjectUrl);
-                  }
-                  const url = URL.createObjectURL(file);
-                  setPreviewObjectUrl(url);
-                  setAvatarPreview(url);
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingPhoto(null);
+                  setShowPhotoModal(true);
                 }}
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2"
-              />
-            </div>
+                className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                Update photo
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setAvatarFile(null);
-                setRemoveAvatar(true);
-                setAvatarPreview("");
-                if (previewObjectUrl) {
-                  URL.revokeObjectURL(previewObjectUrl);
-                  setPreviewObjectUrl("");
-                }
-              }}
-              className="w-full sm:w-auto px-3 py-2 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
-            >
-              Remove current photo
-            </button>
+              {avatarFile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvatarFile(null);
+                    if (previewObjectUrl) {
+                      URL.revokeObjectURL(previewObjectUrl);
+                      setPreviewObjectUrl("");
+                    }
+                    setAvatarPreview(persistedAvatarPreview);
+                  }}
+                  className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  Clear selected photo
+                </button>
+              )}
+
+              {hasCustomAvatar && !avatarFile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvatarFile(null);
+                    setRemoveAvatar(true);
+                    setHasCustomAvatar(false);
+                    setAvatarPreview("");
+                  }}
+                  className="w-full sm:w-auto px-3 py-2 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer disabled:opacity-50"
+                >
+                  Remove current photo
+                </button>
+              )}
+
+              {removeAvatar && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRemoveAvatar(false);
+                    setHasCustomAvatar(Boolean(persistedAvatarPreview));
+                    setAvatarPreview(persistedAvatarPreview);
+                  }}
+                  className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                >
+                  Undo remove photo
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -321,6 +337,125 @@ export default function ProfilePanel({ onProfileChange }) {
           </button>
         </div>
       </form>
+
+      {showSaveConfirm && (
+        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xl">
+            <h3 className="text-lg font-semibold">Confirm update</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
+              Are you sure you want to update your profile changes?
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirm(false)}
+                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  setShowSaveConfirm(false);
+                  await saveProfile();
+                }}
+                className="px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 disabled:opacity-60 cursor-pointer"
+              >
+                {saving ? "Saving..." : "Yes, update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPhotoModal && (
+        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xl">
+            <h3 className="text-lg font-semibold">Upload photo</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
+              Select a JPG, PNG or WEBP image up to 2MB.
+            </p>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(event) => {
+                setError("");
+                setSuccess("");
+                const file = event.target.files?.[0] || null;
+                setPendingPhoto(file);
+              }}
+            />
+
+            <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {pendingPhoto ? pendingPhoto.name : "No file selected yet."}
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                Select file
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingPhoto(null);
+                  setShowPhotoModal(false);
+                }}
+                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!pendingPhoto) {
+                    setError("Please select an image first.");
+                    return;
+                  }
+
+                  if (!ALLOWED_IMAGE_TYPES.includes(pendingPhoto.type)) {
+                    setError("Avatar must be a JPG, PNG, or WEBP image.");
+                    return;
+                  }
+
+                  if (pendingPhoto.size > MAX_IMAGE_BYTES) {
+                    setError("Avatar image must be 2MB or smaller.");
+                    return;
+                  }
+
+                  setAvatarFile(pendingPhoto);
+                  setRemoveAvatar(false);
+                  setHasCustomAvatar(true);
+                  if (previewObjectUrl) {
+                    URL.revokeObjectURL(previewObjectUrl);
+                  }
+                  const url = URL.createObjectURL(pendingPhoto);
+                  setPreviewObjectUrl(url);
+                  setAvatarPreview(url);
+                  setPendingPhoto(null);
+                  setShowPhotoModal(false);
+                }}
+                className="px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 cursor-pointer"
+              >
+                Use photo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

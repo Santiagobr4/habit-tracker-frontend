@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   getWeekly,
   getTrackerMetrics,
@@ -8,12 +8,19 @@ import {
   deleteHabit,
 } from "../api/habits";
 
+const toLocalIsoDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const getWeekStart = () => {
   const now = new Date();
   const day = now.getDay();
   const diffToMonday = day === 0 ? -6 : 1 - day;
   now.setDate(now.getDate() + diffToMonday);
-  return now.toISOString().split("T")[0];
+  return toLocalIsoDate(now);
 };
 
 export const useHabits = () => {
@@ -23,16 +30,22 @@ export const useHabits = () => {
   const [startDate, setStartDate] = useState(getWeekStart());
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const firstLoadRef = useRef(true);
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      if (firstLoadRef.current) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
 
       const [res, metrics] = await Promise.all([
         getWeekly(startDate),
-        getTrackerMetrics(),
+        getTrackerMetrics(startDate),
       ]);
 
       setData(res.habits || []);
@@ -48,6 +61,8 @@ export const useHabits = () => {
       setError("Failed to load data");
     } finally {
       setLoading(false);
+      setRefreshing(false);
+      firstLoadRef.current = false;
     }
   }, [startDate]);
 
@@ -56,10 +71,22 @@ export const useHabits = () => {
   }, [fetchData]);
 
   const changeWeek = (dir) => {
-    const d = new Date(startDate);
+    const d = new Date(`${startDate}T00:00:00`);
+    const currentWeekStart = getWeekStart();
+
+    if (dir > 0 && startDate >= currentWeekStart) {
+      return;
+    }
+
     d.setDate(d.getDate() + dir * 7);
-    setStartDate(d.toISOString().split("T")[0]);
+    setStartDate(toLocalIsoDate(d));
   };
+
+  const goToCurrentWeek = () => {
+    setStartDate(getWeekStart());
+  };
+
+  const canGoNext = startDate < getWeekStart();
 
   const toggleStatus = (current) => {
     if (current === "pending") return "done";
@@ -177,9 +204,12 @@ export const useHabits = () => {
     trackerMetrics,
     startDate,
     loading,
+    refreshing,
     error,
+    canGoNext,
 
     changeWeek,
+    goToCurrentWeek,
 
     handleUpdate,
     handleCreate,

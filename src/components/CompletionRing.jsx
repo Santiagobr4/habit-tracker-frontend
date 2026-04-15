@@ -1,4 +1,5 @@
 import { formatPercent, getCompletionColor } from "../utils/completion";
+import CardHeader from "./CardHeader";
 
 export default function CompletionRing({ value, title, subtitle }) {
   const safeValue = value === null || value === undefined ? 0 : value;
@@ -10,9 +11,10 @@ export default function CompletionRing({ value, title, subtitle }) {
   const dashOffset = circumference - (clamped / 100) * circumference;
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70">
-      <p className="text-sm text-slate-500 dark:text-slate-300">{title}</p>
-      <div className="mt-3 flex items-center justify-center">
+    <div className="h-full rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70 flex flex-col">
+      <CardHeader title={title} badge={formatPercent(value)} />
+
+      <div className="mt-3 flex items-center justify-center flex-1">
         <div className="relative w-32 h-32">
           <svg
             viewBox="0 0 100 100"
@@ -42,13 +44,16 @@ export default function CompletionRing({ value, title, subtitle }) {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-2xl font-semibold leading-none">
+            <p className="text-2xl font-semibold leading-none text-slate-700 dark:text-slate-100">
               {formatPercent(value)}
             </p>
           </div>
         </div>
       </div>
-      <p className="text-xs text-slate-500 mt-3 text-center">{subtitle}</p>
+
+      <p className="text-xs text-slate-500 mt-3 text-center min-h-8">
+        {subtitle}
+      </p>
     </div>
   );
 }

@@ -10,13 +10,14 @@ export const getHistory = async ({ days = 90 } = {}) => {
   return res.data;
 };
 
-export const getTrackerMetrics = async () => {
-  const res = await api.get("/habits/tracker-metrics/");
+export const getTrackerMetrics = async (startDate) => {
+  const query = startDate ? `?start_date=${startDate}` : "";
+  const res = await api.get(`/habits/tracker-metrics/${query}`);
   return res.data;
 };
 
-export const getLeaderboard = async ({ days = 30 } = {}) => {
-  const res = await api.get(`/habits/leaderboard/?days=${days}`);
+export const getLeaderboard = async () => {
+  const res = await api.get("/habits/leaderboard/");
   return res.data;
 };
 

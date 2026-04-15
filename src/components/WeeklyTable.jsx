@@ -13,9 +13,13 @@ export default function WeeklyTable() {
     data,
     dates,
     trackerMetrics,
+    startDate,
     loading,
+    refreshing,
     error,
+    canGoNext,
     changeWeek,
+    goToCurrentWeek,
     handleUpdate,
     handleCreate,
     handleEdit,
@@ -92,6 +96,15 @@ export default function WeeklyTable() {
         <h2 className="text-xl font-semibold">Weekly tracking</h2>
 
         <div className="flex items-center gap-2">
+          {refreshing && (
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/70">
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-slate-700 dark:border-slate-600 dark:border-t-slate-200 animate-spin" />
+              <span className="text-xs text-slate-500 dark:text-slate-300">
+                Updating...
+              </span>
+            </div>
+          )}
+
           <button
             onClick={() => {
               setEditingHabit(null);
@@ -100,6 +113,13 @@ export default function WeeklyTable() {
             className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 cursor-pointer"
           >
             New habit
+          </button>
+
+          <button
+            onClick={goToCurrentWeek}
+            className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+          >
+            Current week
           </button>
 
           <div className="flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-600 p-1 bg-slate-100/70 dark:bg-slate-800/70">
@@ -112,7 +132,8 @@ export default function WeeklyTable() {
 
             <button
               onClick={() => changeWeek(1)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+              disabled={!canGoNext}
+              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               →
             </button>
@@ -120,60 +141,68 @@ export default function WeeklyTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-1">
-        <table className="w-full text-center border-separate border-spacing-y-2 min-w-230">
-          <thead>
-            <tr>
-              <th className="text-left px-3 py-2 min-w-52 text-slate-500 text-sm font-medium">
-                Habit
-              </th>
+      <p className="text-sm text-slate-500 dark:text-slate-300 mb-3">
+        Week starting {startDate}
+      </p>
 
-              {dates.map((d) => (
-                <th
-                  key={d}
-                  className="w-16 cursor-default text-slate-500 text-sm font-medium py-2"
-                >
-                  <div className="leading-tight">
-                    <p className="font-semibold text-slate-700 dark:text-slate-200 text-[12px]">
-                      {getIsoDayNameLong(d)}
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      {getIsoDateLabel(d)}
-                    </p>
-                  </div>
+      <div
+        className={`transition-opacity duration-200 ${refreshing ? "opacity-65" : "opacity-100"}`}
+      >
+        <div className="overflow-x-auto pb-1">
+          <table className="w-full text-center border-separate border-spacing-y-2 min-w-230">
+            <thead>
+              <tr>
+                <th className="text-left px-3 py-2 min-w-52 text-slate-500 text-sm font-medium">
+                  Habit
                 </th>
+
+                {dates.map((d) => (
+                  <th
+                    key={d}
+                    className="w-16 cursor-default text-slate-500 text-sm font-medium py-2"
+                  >
+                    <div className="leading-tight">
+                      <p className="font-semibold text-slate-700 dark:text-slate-200 text-[12px]">
+                        {getIsoDayNameLong(d)}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        {getIsoDateLabel(d)}
+                      </p>
+                    </div>
+                  </th>
+                ))}
+
+                <th className="text-slate-500 text-sm font-medium">Streak</th>
+                <th className="text-slate-500 text-sm font-medium">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {data.map((habit) => (
+                <HabitRow
+                  key={habit.habit_id}
+                  habit={habit}
+                  dates={dates}
+                  onUpdate={async (...args) => {
+                    const result = await handleUpdate(...args);
+                    if (!result?.success) {
+                      setToast({
+                        message:
+                          result?.message || "Could not update habit status",
+                        type: result?.type || "error",
+                      });
+                    }
+                  }}
+                  onEdit={(h) => {
+                    setEditingHabit(h);
+                    setShowModal(true);
+                  }}
+                  onDelete={(h) => setDeleteId(h.habit_id)}
+                />
               ))}
-
-              <th className="text-slate-500 text-sm font-medium">Streak</th>
-              <th className="text-slate-500 text-sm font-medium">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.map((habit) => (
-              <HabitRow
-                key={habit.habit_id}
-                habit={habit}
-                dates={dates}
-                onUpdate={async (...args) => {
-                  const result = await handleUpdate(...args);
-                  if (!result?.success) {
-                    setToast({
-                      message:
-                        result?.message || "Could not update habit status",
-                      type: result?.type || "error",
-                    });
-                  }
-                }}
-                onEdit={(h) => {
-                  setEditingHabit(h);
-                  setShowModal(true);
-                }}
-                onDelete={(h) => setDeleteId(h.habit_id)}
-              />
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {(showModal || editingHabit) && (
