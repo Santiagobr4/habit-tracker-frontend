@@ -16,6 +16,9 @@ import LoadingSpinner from "./LoadingSpinner";
 
 const RANGE_OPTIONS = [30, 90, 180, 365];
 
+/**
+ * Build adaptive coaching insights from history payload and selected window.
+ */
 const buildHistoryInsights = (history, days) => {
   if (!history) return [];
 
@@ -156,6 +159,9 @@ const useElementWidth = () => {
   return [containerRef, width];
 };
 
+/**
+ * History analytics panel with responsive charts and range-based insights.
+ */
 export default function HistoryPanel() {
   const [days, setDays] = useState(90);
   const [history, setHistory] = useState(null);

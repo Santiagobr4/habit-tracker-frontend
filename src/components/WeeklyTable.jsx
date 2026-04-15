@@ -8,6 +8,9 @@ import Toast from "./Toast";
 import { getIsoDateLabel, getIsoDayNameLong } from "../utils/dateLabels";
 import LoadingSpinner from "./LoadingSpinner";
 
+/**
+ * Weekly tracker table that coordinates CRUD actions, status updates, and insights.
+ */
 export default function WeeklyTable() {
   const {
     data,
@@ -33,6 +36,10 @@ export default function WeeklyTable() {
   const [toast, setToast] = useState(null);
   const canManageHabits = new Date().getDay() === 0;
 
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
@@ -55,22 +62,16 @@ export default function WeeklyTable() {
     if (editingHabit) {
       res = await handleEdit(editingHabit.habit_id, habitData);
       if (res.success) {
-        setToast({ message: "Habit updated successfully", type: "success" });
+        showToast("Habit updated successfully", "success");
       } else {
-        setToast({
-          message: res.message || "Could not update habit",
-          type: "error",
-        });
+        showToast(res.message || "Could not update habit", "error");
       }
     } else {
       res = await handleCreate(habitData);
       if (res.success) {
-        setToast({ message: "Habit created successfully", type: "success" });
+        showToast("Habit created successfully", "success");
       } else {
-        setToast({
-          message: res.message || "Could not create habit",
-          type: "error",
-        });
+        showToast(res.message || "Could not create habit", "error");
       }
     }
 
@@ -86,7 +87,9 @@ export default function WeeklyTable() {
     const res = await handleDelete(deleteId);
 
     if (res.success) {
-      setToast({ message: "Habit deleted", type: "success" });
+      showToast("Habit deleted", "success");
+    } else {
+      showToast(res.message || "Could not delete habit", "error");
     }
 
     setDeleteId(null);
@@ -194,6 +197,17 @@ export default function WeeklyTable() {
             </thead>
 
             <tbody>
+              {data.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={dates.length + 3}
+                    className="py-8 text-center text-slate-500 dark:text-slate-300"
+                  >
+                    No habits yet. Create your first habit to start tracking.
+                  </td>
+                </tr>
+              )}
+
               {data.map((habit) => (
                 <HabitRow
                   key={habit.habit_id}
@@ -203,20 +217,18 @@ export default function WeeklyTable() {
                   onUpdate={async (...args) => {
                     const result = await handleUpdate(...args);
                     if (!result?.success) {
-                      setToast({
-                        message:
-                          result?.message || "Could not update habit status",
-                        type: result?.type || "error",
-                      });
+                      showToast(
+                        result?.message || "Could not update habit status",
+                        result?.type || "error",
+                      );
                     }
                   }}
                   onEdit={(h) => {
                     if (!canManageHabits) {
-                      setToast({
-                        message:
-                          "You can only edit or delete habits on Sunday.",
-                        type: "error",
-                      });
+                      showToast(
+                        "You can only edit or delete habits on Sunday.",
+                        "error",
+                      );
                       return;
                     }
                     setEditingHabit(h);
@@ -224,11 +236,10 @@ export default function WeeklyTable() {
                   }}
                   onDelete={(h) => {
                     if (!canManageHabits) {
-                      setToast({
-                        message:
-                          "You can only edit or delete habits on Sunday.",
-                        type: "error",
-                      });
+                      showToast(
+                        "You can only edit or delete habits on Sunday.",
+                        "error",
+                      );
                       return;
                     }
                     setDeleteId(h.habit_id);

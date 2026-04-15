@@ -39,6 +39,9 @@ const getMetricValue = (row, metricKey) => {
   return row.historical_completion;
 };
 
+/**
+ * Build a contextual leaderboard insight card for a metric window.
+ */
 const buildHighlightInsight = ({
   metricKey,
   title,
@@ -192,6 +195,9 @@ const insightBadgeClass = {
   neutral: "text-slate-600 dark:text-slate-300",
 };
 
+/**
+ * Ranking panel showing leaderboard table and scenario-aware insight cards.
+ */
 export default function RankingPanel() {
   const [ranking, setRanking] = useState([]);
   const [highlights, setHighlights] = useState(null);

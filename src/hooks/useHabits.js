@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { getApiErrorMessage } from "../api/auth";
 import {
   getWeekly,
   getTrackerMetrics,
@@ -8,6 +9,9 @@ import {
   deleteHabit,
 } from "../api/habits";
 
+/**
+ * Convert a Date into local YYYY-MM-DD format.
+ */
 const toLocalIsoDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -23,6 +27,9 @@ const getWeekStart = () => {
   return toLocalIsoDate(now);
 };
 
+/**
+ * Normalize any ISO date to the Monday of that week.
+ */
 const getWeekStartFromIsoDate = (isoDate) => {
   if (!isoDate) return null;
   const date = new Date(`${isoDate}T00:00:00`);
@@ -33,6 +40,12 @@ const getWeekStartFromIsoDate = (isoDate) => {
   return toLocalIsoDate(date);
 };
 
+/**
+ * Main tracker hook.
+ *
+ * Provides weekly matrix data, tracker metrics, and mutation handlers
+ * while keeping UI components focused on rendering concerns.
+ */
 export const useHabits = () => {
   const [data, setData] = useState([]);
   const [dates, setDates] = useState([]);
@@ -123,19 +136,6 @@ export const useHabits = () => {
     return "pending";
   };
 
-  const parseApiError = (err, fallback) => {
-    const data = err?.response?.data;
-    if (!data) return fallback;
-
-    if (typeof data.detail === "string") return data.detail;
-    if (Array.isArray(data.status)) return data.status.join(" ");
-    if (Array.isArray(data.date)) return data.date.join(" ");
-    if (Array.isArray(data.days)) return data.days.join(" ");
-    if (Array.isArray(data.name)) return data.name.join(" ");
-
-    return fallback;
-  };
-
   const isFutureDate = (value) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -183,7 +183,7 @@ export const useHabits = () => {
       return {
         success: false,
         type: "error",
-        message: parseApiError(err, "Could not update habit status."),
+        message: getApiErrorMessage(err, "Could not update habit status."),
       };
     }
   };
@@ -197,7 +197,7 @@ export const useHabits = () => {
       console.error("Create error:", err);
       return {
         success: false,
-        message: parseApiError(err, "Could not create habit."),
+        message: getApiErrorMessage(err, "Could not create habit."),
       };
     }
   };
@@ -211,7 +211,7 @@ export const useHabits = () => {
       console.error("Edit error:", err);
       return {
         success: false,
-        message: parseApiError(err, "Could not update habit."),
+        message: getApiErrorMessage(err, "Could not update habit."),
       };
     }
   };
@@ -223,7 +223,10 @@ export const useHabits = () => {
       return { success: true };
     } catch (err) {
       console.error("Delete error:", err);
-      return { success: false };
+      return {
+        success: false,
+        message: getApiErrorMessage(err, "Could not delete habit."),
+      };
     }
   };
 

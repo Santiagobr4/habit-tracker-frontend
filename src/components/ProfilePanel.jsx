@@ -22,6 +22,12 @@ const initialForm = {
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
+/**
+ * Profile editor for authenticated users.
+ *
+ * Props:
+ * - onProfileChange(updatedProfile): optional callback to sync profile in parent shell.
+ */
 export default function ProfilePanel({ onProfileChange }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
@@ -89,6 +95,7 @@ export default function ProfilePanel({ onProfileChange }) {
   }, [previewObjectUrl]);
 
   const saveProfile = async () => {
+    // Send multipart only when uploading an avatar file.
     setSaving(true);
     setError("");
     setSuccess("");
