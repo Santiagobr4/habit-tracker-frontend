@@ -1,25 +1,40 @@
-import api, { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "./index";
+import api from "./index";
+import {
+  clearAccessToken,
+  getAccessToken,
+  setAccessToken,
+} from "./authSession";
 
-export const getStoredAccessToken = () =>
-  localStorage.getItem(ACCESS_TOKEN_KEY);
+export const getStoredAccessToken = () => getAccessToken();
 
-export const getStoredRefreshToken = () =>
-  localStorage.getItem(REFRESH_TOKEN_KEY);
+export const getStoredRefreshToken = () => null;
 
 export const clearAuthTokens = () => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  clearAccessToken();
 };
 
-const storeTokens = ({ access, refresh }) => {
-  localStorage.setItem(ACCESS_TOKEN_KEY, access);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+const storeTokens = ({ access }) => {
+  setAccessToken(access);
 };
 
 export const login = async ({ username, password }) => {
   const res = await api.post("/token/", { username, password });
   storeTokens(res.data);
   return res.data;
+};
+
+export const refreshAccessToken = async () => {
+  const res = await api.post("/token/refresh/", {});
+  storeTokens(res.data);
+  return res.data;
+};
+
+export const logout = async () => {
+  try {
+    await api.post("/logout/", {});
+  } finally {
+    clearAuthTokens();
+  }
 };
 
 export const register = async ({ username, email, password }) => {

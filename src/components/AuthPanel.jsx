@@ -20,23 +20,23 @@ export default function AuthPanel({ onAuthenticated }) {
   const [error, setError] = useState("");
 
   const metrics = [
-    { label: "Daily", value: "Focus" },
-    { label: "Weekly", value: "Rhythm" },
-    { label: "Monthly", value: "Progress" },
+    { label: "Diario", value: "Enfoque" },
+    { label: "Semanal", value: "Ritmo" },
+    { label: "Mensual", value: "Progreso" },
   ];
 
   const heroContent = (
     <>
       <div>
         <p className="text-xs uppercase tracking-[0.22em] text-slate-300">
-          Habit Tracker
+          Seguimiento de hábitos
         </p>
         <h2 className="mt-4 text-3xl md:text-4xl font-semibold leading-tight">
-          Build routines that actually stick.
+          Crea hábitos que se mantengan.
         </h2>
         <p className="mt-4 text-slate-200/90 max-w-xl">
-          Track your day, review your week, and improve your consistency with
-          clear insights.
+          Revisa tu día, tu semana y mejora tu constancia con recomendaciones
+          claras.
         </p>
       </div>
 
@@ -65,7 +65,10 @@ export default function AuthPanel({ onAuthenticated }) {
       setLoginForm(defaultLogin);
     } catch (error) {
       setError(
-        getApiErrorMessage(error, "Invalid credentials. Please try again."),
+        getApiErrorMessage(
+          error,
+          "No pudimos iniciar sesión. Intenta de nuevo.",
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -89,7 +92,7 @@ export default function AuthPanel({ onAuthenticated }) {
       setError(
         getApiErrorMessage(
           error,
-          "Could not create account. Verify the fields and try again.",
+          "No pudimos crear tu cuenta. Revisa los datos e intenta otra vez.",
         ),
       );
     } finally {
@@ -124,7 +127,7 @@ export default function AuthPanel({ onAuthenticated }) {
                   : "text-slate-600 dark:text-slate-300"
               }`}
             >
-              Login
+              Iniciar sesión
             </button>
 
             <button
@@ -139,7 +142,7 @@ export default function AuthPanel({ onAuthenticated }) {
                   : "text-slate-600 dark:text-slate-300"
               }`}
             >
-              Sign up
+              Crear cuenta
             </button>
           </div>
 
@@ -148,23 +151,23 @@ export default function AuthPanel({ onAuthenticated }) {
             className="fade-in motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out"
           >
             <h3 className="text-2xl font-semibold tracking-tight mb-1">
-              {mode === "login" ? "Welcome back" : "Create your account"}
+              {mode === "login" ? "Qué bueno verte" : "Crea tu cuenta"}
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-300 mb-6">
               {mode === "login"
-                ? "Sign in to continue tracking your habits."
-                : "Start building better habits today."}
+                ? "Inicia sesión para continuar."
+                : "Empieza hoy."}
             </p>
 
             {mode === "login" ? (
               <form onSubmit={onLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                    Username
+                    Usuario
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. santi"
+                    placeholder="Ej. santi"
                     required
                     value={loginForm.username}
                     onChange={(event) =>
@@ -179,11 +182,11 @@ export default function AuthPanel({ onAuthenticated }) {
 
                 <div>
                   <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                    Password
+                    Contraseña
                   </label>
                   <input
                     type="password"
-                    placeholder="Your password"
+                    placeholder="Tu contraseña"
                     required
                     value={loginForm.password}
                     onChange={(event) =>
@@ -201,18 +204,18 @@ export default function AuthPanel({ onAuthenticated }) {
                   disabled={submitting}
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 disabled:opacity-50 cursor-pointer font-medium"
                 >
-                  {submitting ? "Signing in..." : "Sign in"}
+                  {submitting ? "Iniciando sesión..." : "Iniciar sesión"}
                 </button>
               </form>
             ) : (
               <form onSubmit={onRegister} className="space-y-4">
                 <div>
                   <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                    Username
+                    Usuario
                   </label>
                   <input
                     type="text"
-                    placeholder="Choose a username"
+                    placeholder="Elige un usuario"
                     required
                     value={registerForm.username}
                     onChange={(event) =>
@@ -227,7 +230,7 @@ export default function AuthPanel({ onAuthenticated }) {
 
                 <div>
                   <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                    Email
+                    Correo electrónico
                   </label>
                   <input
                     type="email"
@@ -246,11 +249,11 @@ export default function AuthPanel({ onAuthenticated }) {
 
                 <div>
                   <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-                    Password
+                    Contraseña
                   </label>
                   <input
                     type="password"
-                    placeholder="At least 8 characters"
+                    placeholder="Mínimo 8 caracteres"
                     required
                     minLength={8}
                     value={registerForm.password}
@@ -269,7 +272,7 @@ export default function AuthPanel({ onAuthenticated }) {
                   disabled={submitting}
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 disabled:opacity-50 cursor-pointer font-medium"
                 >
-                  {submitting ? "Creating account..." : "Create account"}
+                  {submitting ? "Creando cuenta..." : "Crear cuenta"}
                 </button>
               </form>
             )}

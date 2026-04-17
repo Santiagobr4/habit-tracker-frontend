@@ -9,6 +9,12 @@ import { getSymbol, getStatusStyle } from "../utils/habitHelpers";
  */
 export default function TableCell({ status, onClick }) {
   const isDisabled = status === "skip";
+  const statusLabel = {
+    pending: "pendiente",
+    done: "completado",
+    missed: "omitido",
+    skip: "no aplica",
+  };
 
   return (
     <button
@@ -16,7 +22,9 @@ export default function TableCell({ status, onClick }) {
       onClick={onClick}
       disabled={isDisabled}
       aria-label={
-        isDisabled ? "Day not applicable" : `Update status: ${status}`
+        isDisabled
+          ? "Día no aplicable"
+          : `Actualizar estado: ${statusLabel[status] || status}`
       }
       className={`w-12 h-10 rounded-lg flex items-center justify-center transition shadow-sm ${
         isDisabled ? "cursor-not-allowed" : "cursor-pointer hover:scale-105"

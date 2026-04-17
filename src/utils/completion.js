@@ -1,5 +1,5 @@
 export const formatPercent = (value) =>
-  value === null || value === undefined ? "N/A" : `${value}%`;
+  value === null || value === undefined ? "N/D" : `${value}%`;
 
 export const getCompletionColor = (value) => {
   if (value === null || value === undefined) {

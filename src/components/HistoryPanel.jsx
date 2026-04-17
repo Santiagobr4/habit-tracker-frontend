@@ -30,8 +30,8 @@ const buildHistoryInsights = (history, days) => {
     return [
       {
         tone: "neutral",
-        title: "You are just getting started",
-        text: "Keep logging a few more days and this space will turn into guidance you can actually use.",
+        title: "Apenas estás empezando",
+        text: "Registra unos días más y aquí verás recomendaciones útiles.",
       },
     ];
   }
@@ -68,51 +68,51 @@ const buildHistoryInsights = (history, days) => {
   if (average >= thresholds.high) {
     cards.push({
       tone: "good",
-      title: "Strong consistency",
-      text: "You are doing great for this time window. Keep this rhythm simple and protect the habits that already feel natural.",
+      title: "Constancia sólida",
+      text: "Vas muy bien. Mantén un ritmo simple y constante.",
     });
   } else if (average >= thresholds.medium) {
     cards.push({
       tone: "neutral",
-      title: "You have a solid base",
-      text: "You are close to your next level. One extra completed habit on your weaker days can move this up fast.",
+      title: "Tienes una base firme",
+      text: "Estás cerca del siguiente nivel. Un hábito extra en días flojos puede marcar diferencia.",
     });
   } else {
     cards.push({
       tone: "warn",
-      title: "Momentum still building",
-      text: "This is the phase where small wins matter most. Lower the bar on hard days and protect your streak first.",
+      title: "Aún estás construyendo impulso",
+      text: "Los logros pequeños importan. Baja la exigencia en días difíciles y cuida tu racha.",
     });
   }
 
   if (trend === "up") {
     cards.push({
       tone: "good",
-      title: "Trend is improving",
-      text: `Your completion improved in this ${days}-day view. Keep repeating what worked recently; consistency beats intensity here.`,
+      title: "Tu tendencia mejora",
+      text: `Tu cumplimiento mejoró en los últimos ${days} días. Repite lo que te funcionó.`,
     });
   } else if (trend === "down") {
     cards.push({
       tone: "warn",
-      title: "There is a small dip to fix",
-      text: `Your completion dipped in this ${days}-day view. Reset with one non-negotiable habit per day, then build back up.`,
+      title: "Hay una baja que corregir",
+      text: `Tu cumplimiento bajó en los últimos ${days} días. Vuelve a un hábito base diario.`,
     });
   }
 
   if (weakDays > 0) {
     cards.push({
       tone: weakDayRatio >= 0.35 ? "warn" : "neutral",
-      title: `${weakDays} low-completion day${weakDays === 1 ? "" : "s"}`,
+      title: `${weakDays} día${weakDays === 1 ? "" : "s"} con baja adherencia`,
       text:
         weakDayRatio >= 0.35
-          ? "Your biggest opportunity is protecting low days with a lighter backup version of your routine."
-          : "A few low days showed up. Plan your fallback routine now so those days do not break momentum.",
+          ? "Tu oportunidad está en proteger los días flojos con una versión ligera de tu rutina."
+          : "Aparecieron días flojos. Define una versión de respaldo para mantener el ritmo.",
     });
   } else if (bestDay) {
     cards.push({
       tone: "good",
-      title: `Best day: ${bestDay.date}`,
-      text: "You already proved what works. Recreate the same schedule and environment from that day this week.",
+      title: `Mejor día: ${bestDay.date}`,
+      text: "Ya viste qué te funciona. Repite ese contexto esta semana.",
     });
   }
 
@@ -162,7 +162,7 @@ const useElementWidth = () => {
 /**
  * History analytics panel with responsive charts and range-based insights.
  */
-export default function HistoryPanel() {
+export default function HistoryPanel({ refreshVersion = 0 }) {
   const [days, setDays] = useState(90);
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -186,7 +186,7 @@ export default function HistoryPanel() {
         }
       } catch {
         if (!isCancelled) {
-          setError("Could not load historical metrics.");
+          setError("No pudimos cargar las métricas históricas.");
         }
       } finally {
         if (!isCancelled) {
@@ -200,7 +200,7 @@ export default function HistoryPanel() {
     return () => {
       isCancelled = true;
     };
-  }, [days]);
+  }, [days, refreshVersion]);
 
   const chartData = useMemo(() => {
     if (!history) return { daily: [], weekly: [], monthly: [] };
@@ -234,7 +234,7 @@ export default function HistoryPanel() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        <LoadingSpinner label="Loading history..." />
+        <LoadingSpinner label="Cargando historial..." />
       </div>
     );
   }
@@ -254,10 +254,10 @@ export default function HistoryPanel() {
           <div className="flex flex-wrap justify-between items-center gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-                History
+                Historial
               </p>
               <h2 className="text-xl font-semibold mt-1">
-                History & Analytics
+                Historial y analítica
               </h2>
             </div>
 
@@ -280,25 +280,25 @@ export default function HistoryPanel() {
           </div>
 
           <p className="text-sm text-slate-500 dark:text-slate-300 mt-3">
-            Insights based on your selected range.
+            Recomendaciones según el rango que elegiste.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
           <div className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
             <p className="text-sm text-slate-500 dark:text-slate-300">
-              Average completion
+              Promedio de cumplimiento
             </p>
             <p className="text-2xl font-bold mt-1">
               {history?.summary?.average_daily_completion !== null
                 ? `${history.summary.average_daily_completion}%`
-                : "N/A"}
+                : "N/D"}
             </p>
           </div>
 
           <div className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
             <p className="text-sm text-slate-500 dark:text-slate-300">
-              Active days
+              Días activos
             </p>
             <p className="text-2xl font-bold mt-1">
               {history?.summary?.active_days ?? 0}
@@ -306,26 +306,28 @@ export default function HistoryPanel() {
           </div>
 
           <div className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-slate-500 dark:text-slate-300">Range</p>
+            <p className="text-sm text-slate-500 dark:text-slate-300">Rango</p>
             <p className="text-sm font-medium mt-2">
-              {history?.range?.start_date} to {history?.range?.end_date}
+              {history?.range?.start_date} a {history?.range?.end_date}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-300 mt-1">
-              Metrics baseline: {history?.range?.baseline_date}
+              Línea base de métricas: {history?.range?.baseline_date}
             </p>
           </div>
         </div>
 
         {!hasAnyMetricData && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-6 bg-slate-50/70 dark:bg-slate-800/70">
-            No metrics available yet for this period. Metrics start from your
-            account and habit start dates.
+            Aún no hay métricas para este período. Las métricas comienzan desde
+            la fecha de creación de tu cuenta y de tus hábitos.
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-6 min-w-0">
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 min-w-0">
-            <h3 className="font-medium mb-3">Daily completion trend</h3>
+            <h3 className="font-medium mb-3">
+              Tendencia diaria de cumplimiento
+            </h3>
             <div ref={dailyContainerRef} className="h-64 min-w-0">
               <LineChart
                 width={Math.max(320, dailyWidth)}
@@ -366,7 +368,7 @@ export default function HistoryPanel() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 min-w-0">
-              <h3 className="font-medium mb-3">Weekly comparison</h3>
+              <h3 className="font-medium mb-3">Comparativa semanal</h3>
               <div ref={weeklyContainerRef} className="h-56 min-w-0">
                 <BarChart
                   width={Math.max(320, weeklyWidth)}
@@ -390,7 +392,7 @@ export default function HistoryPanel() {
             </div>
 
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 min-w-0">
-              <h3 className="font-medium mb-3">Monthly comparison</h3>
+              <h3 className="font-medium mb-3">Comparativa mensual</h3>
               <div ref={monthlyContainerRef} className="h-56 min-w-0">
                 <BarChart
                   width={Math.max(320, monthlyWidth)}
@@ -417,9 +419,9 @@ export default function HistoryPanel() {
 
         <div className="mt-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 p-4">
           <div className="flex flex-wrap items-end justify-between gap-2 mb-3">
-            <h3 className="font-semibold">Insights</h3>
+            <h3 className="font-semibold">Recomendaciones</h3>
             <p className="text-xs text-slate-500 dark:text-slate-300">
-              Tuned for {days}d window
+              Ajustado a una ventana de {days} días
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

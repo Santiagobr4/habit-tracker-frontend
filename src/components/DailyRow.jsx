@@ -3,7 +3,7 @@ import { getPercentageStyle } from "../utils/habitHelpers";
 export default function DailyRow({ dates, stats }) {
   return (
     <tr>
-      <th className="text-left px-3 text-gray-400 min-w-50">Daily</th>
+      <th className="text-left px-3 text-gray-400 min-w-50">Diario</th>
 
       {dates.map((date) => (
         <th key={date}>

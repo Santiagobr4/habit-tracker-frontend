@@ -38,12 +38,12 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
 
   const handleSubmit = async () => {
     if (!habit.name.trim()) {
-      setFormError("Please enter a habit name.");
+      setFormError("Ingresa un nombre para el hábito.");
       return;
     }
 
     if (habit.days.length === 0) {
-      setFormError("Please select at least one day.");
+      setFormError("Selecciona al menos un día.");
       return;
     }
 
@@ -53,7 +53,7 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
     });
 
     if (!response?.success) {
-      setFormError(response?.message || "Could not save habit.");
+      setFormError(response?.message || "No pudimos guardar el hábito.");
       return;
     }
 
@@ -68,15 +68,15 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 px-3">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xl">
         <h2 className="text-xl font-semibold mb-1">
-          {initialData ? "Edit Habit" : "Create Habit"}
+          {initialData ? "Editar hábito" : "Crear hábito"}
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-300 mb-5">
-          Define the days when this habit should be tracked.
+          Define los días en los que se seguirá este hábito.
         </p>
 
         <input
           type="text"
-          placeholder="Habit name"
+          placeholder="Nombre del hábito"
           className="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg mb-4 text-black dark:text-white dark:bg-slate-800"
           value={habit.name}
           onChange={(e) =>
@@ -97,7 +97,7 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
                 : "bg-slate-100 dark:bg-slate-800"
             }`}
           >
-            All days
+            Todos los días
           </button>
         </div>
 
@@ -125,14 +125,14 @@ export default function HabitModal({ open, onClose, onSubmit, initialData }) {
             onClick={onClose}
             className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
           >
-            Cancel
+            Cancelar
           </button>
 
           <button
             onClick={handleSubmit}
             className="px-3 py-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-lg hover:opacity-90 cursor-pointer"
           >
-            {initialData ? "Update" : "Create"}
+            {initialData ? "Guardar cambios" : "Crear"}
           </button>
         </div>
       </div>

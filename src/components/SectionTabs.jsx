@@ -1,8 +1,8 @@
 const TAB_ITEMS = [
-  { id: "tracker", label: "Tracker" },
-  { id: "history", label: "History" },
-  { id: "ranking", label: "Ranking" },
-  { id: "profile", label: "Profile" },
+  { id: "tracker", label: "Seguimiento" },
+  { id: "history", label: "Historial" },
+  { id: "ranking", label: "Clasificación" },
+  { id: "profile", label: "Perfil" },
 ];
 
 export default function SectionTabs({ current, onChange }) {

@@ -11,7 +11,7 @@ import LoadingSpinner from "./LoadingSpinner";
 /**
  * Weekly tracker table that coordinates CRUD actions, status updates, and insights.
  */
-export default function WeeklyTable() {
+export default function WeeklyTable({ onDataChanged }) {
   const {
     data,
     dates,
@@ -28,7 +28,7 @@ export default function WeeklyTable() {
     handleCreate,
     handleEdit,
     handleDelete,
-  } = useHabits();
+  } = useHabits({ onDataChanged });
 
   const [showModal, setShowModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
@@ -43,7 +43,7 @@ export default function WeeklyTable() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        <LoadingSpinner label="Loading habits..." />
+        <LoadingSpinner label="Cargando hábitos..." />
       </div>
     );
   }
@@ -62,16 +62,16 @@ export default function WeeklyTable() {
     if (editingHabit) {
       res = await handleEdit(editingHabit.habit_id, habitData);
       if (res.success) {
-        showToast("Habit updated successfully", "success");
+        showToast("Hábito actualizado", "success");
       } else {
-        showToast(res.message || "Could not update habit", "error");
+        showToast(res.message || "No pudimos actualizarlo", "error");
       }
     } else {
       res = await handleCreate(habitData);
       if (res.success) {
-        showToast("Habit created successfully", "success");
+        showToast("Hábito creado", "success");
       } else {
-        showToast(res.message || "Could not create habit", "error");
+        showToast(res.message || "No pudimos crearlo", "error");
       }
     }
 
@@ -87,9 +87,9 @@ export default function WeeklyTable() {
     const res = await handleDelete(deleteId);
 
     if (res.success) {
-      showToast("Habit deleted", "success");
+      showToast("Hábito eliminado", "success");
     } else {
-      showToast(res.message || "Could not delete habit", "error");
+      showToast(res.message || "No pudimos eliminarlo", "error");
     }
 
     setDeleteId(null);
@@ -101,9 +101,9 @@ export default function WeeklyTable() {
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-              Tracker
+              Seguimiento
             </p>
-            <h2 className="text-xl font-semibold mt-1">Weekly tracking</h2>
+            <h2 className="text-xl font-semibold mt-1">Seguimiento semanal</h2>
           </div>
 
           <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export default function WeeklyTable() {
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70">
                 <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-slate-700 dark:border-slate-600 dark:border-t-slate-200 animate-spin" />
                 <span className="text-xs text-slate-500 dark:text-slate-300">
-                  Updating...
+                  Actualizando...
                 </span>
               </div>
             )}
@@ -123,7 +123,7 @@ export default function WeeklyTable() {
               }}
               className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 cursor-pointer"
             >
-              New habit
+              Nuevo hábito
             </button>
 
             <div
@@ -133,7 +133,7 @@ export default function WeeklyTable() {
                 onClick={goToCurrentWeek}
                 className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer whitespace-nowrap"
               >
-                Current week
+                Semana actual
               </button>
             </div>
 
@@ -143,13 +143,13 @@ export default function WeeklyTable() {
                 disabled={!canGoPrev}
                 title={
                   canGoPrev
-                    ? "Go to previous week"
-                    : "You cannot go before your registration week"
+                    ? "Ir a la semana anterior"
+                    : "No puedes ir antes de tu primera semana"
                 }
                 aria-label={
                   canGoPrev
-                    ? "Go to previous week"
-                    : "Previous week disabled before registration week"
+                    ? "Ir a la semana anterior"
+                    : "Semana anterior no disponible"
                 }
                 className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -160,7 +160,7 @@ export default function WeeklyTable() {
         </div>
 
         <p className="text-sm text-slate-500 dark:text-slate-300 mt-3">
-          Week starting {startDate}
+          Semana del {startDate}
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function WeeklyTable() {
             <thead>
               <tr>
                 <th className="text-left px-3 py-2 min-w-52 text-slate-500 text-sm font-medium">
-                  Habit
+                  Hábito
                 </th>
 
                 {dates.map((d) => (
@@ -191,8 +191,8 @@ export default function WeeklyTable() {
                   </th>
                 ))}
 
-                <th className="text-slate-500 text-sm font-medium">Streak</th>
-                <th className="text-slate-500 text-sm font-medium">Actions</th>
+                <th className="text-slate-500 text-sm font-medium">Racha</th>
+                <th className="text-slate-500 text-sm font-medium">Acciones</th>
               </tr>
             </thead>
 
@@ -203,7 +203,8 @@ export default function WeeklyTable() {
                     colSpan={dates.length + 3}
                     className="py-8 text-center text-slate-500 dark:text-slate-300"
                   >
-                    No habits yet. Create your first habit to start tracking.
+                    Aún no tienes hábitos. Crea el primero para empezar. Aún no
+                    tienes hábitos. Crea uno para empezar.
                   </td>
                 </tr>
               )}
@@ -218,7 +219,8 @@ export default function WeeklyTable() {
                     const result = await handleUpdate(...args);
                     if (!result?.success) {
                       showToast(
-                        result?.message || "Could not update habit status",
+                        result?.message ||
+                          "No pudimos actualizar el estado del hábito",
                         result?.type || "error",
                       );
                     }
@@ -226,7 +228,7 @@ export default function WeeklyTable() {
                   onEdit={(h) => {
                     if (!canManageHabits) {
                       showToast(
-                        "You can only edit or delete habits on Sunday.",
+                        "Solo puedes editar o eliminar hábitos en domingo.",
                         "error",
                       );
                       return;
@@ -237,7 +239,7 @@ export default function WeeklyTable() {
                   onDelete={(h) => {
                     if (!canManageHabits) {
                       showToast(
-                        "You can only edit or delete habits on Sunday.",
+                        "Solo puedes editar o eliminar hábitos en domingo.",
                         "error",
                       );
                       return;
@@ -266,7 +268,7 @@ export default function WeeklyTable() {
 
       <ConfirmDialog
         open={!!deleteId}
-        text="Are you sure you want to delete this habit?"
+        text="¿Seguro que quieres eliminar este hábito?"
         onClose={() => setDeleteId(null)}
         onConfirm={confirmDelete}
       />

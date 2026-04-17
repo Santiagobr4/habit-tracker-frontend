@@ -12,8 +12,8 @@ const getBarHeight = (value) => {
 };
 
 const formatInsightDate = (isoDate) => {
-  if (!isoDate) return "Unknown date";
-  return new Intl.DateTimeFormat("en-US", {
+  if (!isoDate) return "Fecha desconocida";
+  return new Intl.DateTimeFormat("es-419", {
     weekday: "short",
     month: "long",
     day: "numeric",
@@ -24,8 +24,8 @@ const formatInsightDate = (isoDate) => {
 const formatDateList = (dates) => {
   if (!dates.length) return "";
   if (dates.length === 1) return dates[0];
-  if (dates.length === 2) return `${dates[0]} and ${dates[1]}`;
-  return `${dates[0]}, ${dates[1]}, +${dates.length - 2} more`;
+  if (dates.length === 2) return `${dates[0]} y ${dates[1]}`;
+  return `${dates[0]}, ${dates[1]} y ${dates.length - 2} más`;
 };
 
 const toneStyles = {
@@ -81,20 +81,20 @@ const buildInsights = ({ daily, focus, week }) => {
     if (focus.completion >= 80) {
       cards.push({
         tone: "success",
-        title: "Strong today",
-        text: "Great job showing up today. Keep this same rhythm and your week will feel much easier to sustain.",
+        title: "Hoy vas muy bien",
+        text: "Vas excelente. Mantén este ritmo y la semana será más fácil.",
       });
     } else if (focus.completion >= 50) {
       cards.push({
         tone: "warning",
-        title: "Room to sharpen today",
-        text: "You are closer than it seems. Completing one more habit today can shift your whole week.",
+        title: "Hoy tienes margen para mejorar",
+        text: "Estás cerca. Completar un hábito más hoy puede cambiar tu semana.",
       });
     } else {
       cards.push({
         tone: "critical",
-        title: "Today needs recovery",
-        text: "Keep it simple today. Start with your minimum routine and build from there.",
+        title: "Hoy toca recuperar",
+        text: "Empieza simple: haz tu versión mínima y avanza desde ahí.",
       });
     }
   }
@@ -103,20 +103,20 @@ const buildInsights = ({ daily, focus, week }) => {
     if (week.completion >= 80) {
       cards.push({
         tone: "success",
-        title: "Very strong week",
-        text: "This is excellent consistency. Keep your routine simple, repeatable, and realistic.",
+        title: "Semana muy sólida",
+        text: "Tu constancia fue excelente. Mantén una rutina simple y realista.",
       });
     } else if (week.completion >= 60) {
       cards.push({
         tone: "info",
-        title: "Solid weekly base",
-        text: "You built a solid base this week. Improving one low day can raise your score quickly.",
+        title: "Buena base semanal",
+        text: "Construiste una buena base. Mejorar un día flojo puede subir rápido tu porcentaje.",
       });
     } else {
       cards.push({
         tone: "warning",
-        title: "Week needs a push",
-        text: "This week can still recover. Focus on one core habit early each day and rebuild momentum step by step.",
+        title: "A la semana le falta un empujón",
+        text: "Aún puedes recuperar la semana. Enfócate en un hábito clave al iniciar el día.",
       });
     }
   }
@@ -124,25 +124,25 @@ const buildInsights = ({ daily, focus, week }) => {
   if (trend === "up") {
     cards.push({
       tone: "info",
-      title: "Trend is improving",
-      text: "Your trend is improving. Repeat what worked on your best recent days and keep it steady.",
+      title: "Tu tendencia mejora",
+      text: "Vas en ascenso. Repite lo que te funcionó en tus mejores días.",
     });
   } else if (trend === "down") {
     cards.push({
       tone: "warning",
-      title: "Trend is drifting down",
-      text: "Small dips are normal. Simplify your hardest habit this week and get back to consistency.",
+      title: "Tu tendencia va a la baja",
+      text: "Las bajadas son normales. Simplifica el hábito más difícil y retoma constancia.",
     });
   }
 
   if (weakDays.length > 0) {
     cards.push({
       tone: weakRatio >= 0.35 ? "critical" : "warning",
-      title: `${weakDays.length} low-completion day${weakDays.length === 1 ? "" : "s"}`,
+      title: `${weakDays.length} día${weakDays.length === 1 ? "" : "s"} con baja adherencia`,
       text:
         weakRatio >= 0.35
-          ? "Low days are pulling your week down. Create a lighter fallback routine so hard days still count."
-          : "Your next improvement is in low days. Plan a fallback version so one hard day does not become two.",
+          ? "Los días flojos están bajando tu semana. Crea una versión ligera de respaldo."
+          : "Tu siguiente mejora está en los días flojos. Define una versión de respaldo.",
     });
   }
 
@@ -153,21 +153,21 @@ const buildInsights = ({ daily, focus, week }) => {
       );
       cards.push({
         tone: "success",
-        title: `${perfectDays.length} perfect days this week`,
-        text: `You hit 100% on ${formatDateList(formattedPerfectDates)}. That is strong proof your system works, so protect that rhythm.`,
+        title: `${perfectDays.length} días perfectos esta semana`,
+        text: `Lograste 100% en ${formatDateList(formattedPerfectDates)}. Eso confirma que tu sistema funciona, así que protege ese ritmo.`,
       });
     } else if (topDays.length > 1) {
       const tiedDates = topDays.map((row) => formatInsightDate(row.date));
       cards.push({
         tone: "info",
-        title: `Best days this week: ${formatPercent(maxCompletion)}`,
-        text: `Your top score was shared by ${formatDateList(tiedDates)}. You are building repeatable wins, keep reinforcing that pattern.`,
+        title: `Mejores días de la semana: ${formatPercent(maxCompletion)}`,
+        text: `Tu mejor resultado se repitió en ${formatDateList(tiedDates)}. Estás creando logros repetibles; refuerza ese patrón.`,
       });
     } else {
       cards.push({
         tone: "info",
-        title: `Best day of the week: ${formatInsightDate(bestDay.date)}`,
-        text: `${formatPercent(bestDay.completion)} was your peak. Recreate that setup and turn one good day into your new normal.`,
+        title: `Mejor día de la semana: ${formatInsightDate(bestDay.date)}`,
+        text: `${formatPercent(bestDay.completion)} fue tu punto más alto. Repite ese contexto y vuelve ese buen día tu nueva normalidad.`,
       });
     }
   }
@@ -175,8 +175,8 @@ const buildInsights = ({ daily, focus, week }) => {
   if (cards.length === 0) {
     cards.push({
       tone: "info",
-      title: "Not enough signal yet",
-      text: "Keep showing up this week. A little more data will unlock sharper coaching insights.",
+      title: "Aún falta información",
+      text: "Sigue cumpliendo esta semana. Con un poco más de datos tendrás recomendaciones más precisas.",
     });
   }
 
@@ -199,19 +199,19 @@ export default function TrackerInsights({ metrics }) {
   const isCurrentWeek = metrics?.is_current_week;
   const insights = buildInsights({ daily: safeDaily, focus, week });
   const focusLabel = isCurrentWeek
-    ? "Today completion"
-    : `Completion on ${metrics?.focus_date}`;
+    ? "Cumplimiento de hoy"
+    : `Cumplimiento del ${metrics?.focus_date}`;
   const weekLabel = isCurrentWeek
-    ? "Current week completion"
-    : "Selected week completion";
+    ? "Cumplimiento de la semana actual"
+    : "Cumplimiento de la semana seleccionada";
   const showTrendInline = safeDaily.length > 0 && safeDaily.length <= 7;
 
   return (
     <div className="mt-7 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/70 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <h3 className="text-lg font-semibold">Current performance</h3>
+        <h3 className="text-lg font-semibold">Rendimiento actual</h3>
         <p className="text-sm text-slate-500 dark:text-slate-300">
-          Baseline starts at {metrics?.baseline_date}
+          Línea base desde {metrics?.baseline_date}
         </p>
       </div>
 
@@ -233,7 +233,7 @@ export default function TrackerInsights({ metrics }) {
         <CompletionRing
           value={focus?.completion}
           title={focusLabel}
-          subtitle={`${focus?.done ?? 0} completed out of ${focus?.total ?? 0}`}
+          subtitle={`${focus?.done ?? 0} completados de ${focus?.total ?? 0}`}
         />
 
         <CompletionRing
@@ -245,7 +245,7 @@ export default function TrackerInsights({ metrics }) {
         {showTrendInline && (
           <div className="h-full rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70 flex flex-col">
             <CardHeader
-              title="Week trend"
+              title="Tendencia semanal"
               badge={formatPercent(week?.completion)}
             />
             <div className="flex-1 flex items-end gap-2 pb-1 justify-between min-h-32">
@@ -282,13 +282,13 @@ export default function TrackerInsights({ metrics }) {
       {!showTrendInline && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800/70">
           <CardHeader
-            title="Week trend"
+            title="Tendencia semanal"
             badge={formatPercent(week?.completion)}
           />
           <div className="flex items-end gap-3 h-36 overflow-x-auto pb-1">
             {safeDaily.length === 0 && (
               <p className="text-sm text-slate-500">
-                No data for this week yet.
+                Aún no hay datos para esta semana.
               </p>
             )}
 

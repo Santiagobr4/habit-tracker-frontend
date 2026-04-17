@@ -4,10 +4,10 @@ import defaultAvatar from "../assets/default-avatar.svg";
 import LoadingSpinner from "./LoadingSpinner";
 
 const GENDER_OPTIONS = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "non_binary", label: "Non-binary" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
+  { value: "male", label: "Masculino" },
+  { value: "female", label: "Femenino" },
+  { value: "non_binary", label: "No binario" },
+  { value: "prefer_not_to_say", label: "Prefiero no decirlo" },
 ];
 
 const initialForm = {
@@ -71,7 +71,9 @@ export default function ProfilePanel({ onProfileChange }) {
         }
       } catch (requestError) {
         if (!isCancelled) {
-          setError(getApiErrorMessage(requestError, "Could not load profile."));
+          setError(
+            getApiErrorMessage(requestError, "No pudimos cargar el perfil."),
+          );
         }
       } finally {
         if (!isCancelled) {
@@ -131,7 +133,7 @@ export default function ProfilePanel({ onProfileChange }) {
       }
 
       const updatedProfile = await updateProfile(payload);
-      setSuccess("Profile updated successfully.");
+      setSuccess("Perfil actualizado.");
       setAvatarFile(null);
       setRemoveAvatar(false);
       const nextAvatar = updatedProfile.avatar_file_url || "";
@@ -140,7 +142,9 @@ export default function ProfilePanel({ onProfileChange }) {
       setHasCustomAvatar(Boolean(nextAvatar));
       onProfileChange?.(updatedProfile);
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError, "Could not update profile."));
+      setError(
+        getApiErrorMessage(requestError, "No pudimos actualizar el perfil."),
+      );
     } finally {
       setSaving(false);
     }
@@ -155,7 +159,7 @@ export default function ProfilePanel({ onProfileChange }) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        <LoadingSpinner label="Loading profile..." />
+        <LoadingSpinner label="Cargando perfil..." />
       </div>
     );
   }
@@ -164,22 +168,22 @@ export default function ProfilePanel({ onProfileChange }) {
     <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
       <div className="mb-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-linear-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 p-4">
         <p className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
-          Profile
+          Perfil
         </p>
-        <h2 className="text-xl font-semibold mt-1">Profile settings</h2>
+        <h2 className="text-xl font-semibold mt-1">Configuración de perfil</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60">
           <img
             src={avatarPreview || defaultAvatar}
-            alt="Profile"
+            alt="Perfil"
             className="w-20 h-20 rounded-full object-cover border border-slate-300 dark:border-slate-600"
           />
 
           <div className="flex-1">
             <p className="text-sm text-slate-500 dark:text-slate-300">
-              JPG, PNG or WEBP. Max 2MB.
+              JPG, PNG o WEBP, hasta 2 MB.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -191,7 +195,7 @@ export default function ProfilePanel({ onProfileChange }) {
                 }}
                 className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
               >
-                Update photo
+                Cambiar foto
               </button>
 
               {avatarFile && (
@@ -207,7 +211,7 @@ export default function ProfilePanel({ onProfileChange }) {
                   }}
                   className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                 >
-                  Clear selected photo
+                  Quitar foto elegida
                 </button>
               )}
 
@@ -222,7 +226,7 @@ export default function ProfilePanel({ onProfileChange }) {
                   }}
                   className="w-full sm:w-auto px-3 py-2 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer disabled:opacity-50"
                 >
-                  Remove current photo
+                  Eliminar foto actual
                 </button>
               )}
 
@@ -236,7 +240,7 @@ export default function ProfilePanel({ onProfileChange }) {
                   }}
                   className="w-full sm:w-auto px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                 >
-                  Undo remove photo
+                  Deshacer
                 </button>
               )}
             </div>
@@ -246,7 +250,7 @@ export default function ProfilePanel({ onProfileChange }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              First name
+              Nombre
             </label>
             <input
               type="text"
@@ -260,7 +264,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              Last name
+              Apellido
             </label>
             <input
               type="text"
@@ -274,7 +278,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              Email
+              Correo electrónico
             </label>
             <input
               type="email"
@@ -288,7 +292,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              Birth date
+              Fecha de nacimiento
             </label>
             <input
               type="date"
@@ -302,7 +306,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              Weight (kg)
+              Peso (kg)
             </label>
             <input
               type="number"
@@ -318,7 +322,7 @@ export default function ProfilePanel({ onProfileChange }) {
 
           <div>
             <label className="block text-sm mb-1 text-slate-500 dark:text-slate-300">
-              Gender
+              Género
             </label>
             <select
               value={form.gender}
@@ -345,7 +349,7 @@ export default function ProfilePanel({ onProfileChange }) {
             disabled={saving}
             className="px-4 py-2 rounded-lg bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 hover:opacity-90 disabled:opacity-60 cursor-pointer"
           >
-            {saving ? "Saving..." : "Save profile"}
+            {saving ? "Guardando..." : "Guardar perfil"}
           </button>
         </div>
       </form>
@@ -353,9 +357,9 @@ export default function ProfilePanel({ onProfileChange }) {
       {showSaveConfirm && (
         <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
           <div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xl">
-            <h3 className="text-lg font-semibold">Confirm update</h3>
+            <h3 className="text-lg font-semibold">Confirmar cambios</h3>
             <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
-              Are you sure you want to update your profile changes?
+              ¿Quieres guardar estos cambios?
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
@@ -363,7 +367,7 @@ export default function ProfilePanel({ onProfileChange }) {
                 onClick={() => setShowSaveConfirm(false)}
                 className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="button"
@@ -374,7 +378,7 @@ export default function ProfilePanel({ onProfileChange }) {
                 }}
                 className="px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 disabled:opacity-60 cursor-pointer"
               >
-                {saving ? "Saving..." : "Yes, update"}
+                {saving ? "Guardando..." : "Sí, guardar"}
               </button>
             </div>
           </div>
@@ -384,9 +388,9 @@ export default function ProfilePanel({ onProfileChange }) {
       {showPhotoModal && (
         <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
           <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold">Upload photo</h3>
+            <h3 className="text-lg font-semibold">Subir foto</h3>
             <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
-              Select a JPG, PNG or WEBP image up to 2MB.
+              Elige una imagen JPG, PNG o WEBP de hasta 2 MB.
             </p>
 
             <input
@@ -404,7 +408,9 @@ export default function ProfilePanel({ onProfileChange }) {
 
             <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3">
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                {pendingPhoto ? pendingPhoto.name : "No file selected yet."}
+                {pendingPhoto
+                  ? pendingPhoto.name
+                  : "Aún no elegiste un archivo."}
               </p>
             </div>
 
@@ -414,7 +420,7 @@ export default function ProfilePanel({ onProfileChange }) {
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                Select file
+                Seleccionar archivo
               </button>
             </div>
 
@@ -427,24 +433,24 @@ export default function ProfilePanel({ onProfileChange }) {
                 }}
                 className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                Cancel
+                Cancelar
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   if (!pendingPhoto) {
-                    setError("Please select an image first.");
+                    setError("Primero elige una imagen.");
                     return;
                   }
 
                   if (!ALLOWED_IMAGE_TYPES.includes(pendingPhoto.type)) {
-                    setError("Avatar must be a JPG, PNG, or WEBP image.");
+                    setError("La imagen debe ser JPG, PNG o WEBP.");
                     return;
                   }
 
                   if (pendingPhoto.size > MAX_IMAGE_BYTES) {
-                    setError("Avatar image must be 2MB or smaller.");
+                    setError("La imagen debe pesar 2 MB o menos.");
                     return;
                   }
 
@@ -462,7 +468,7 @@ export default function ProfilePanel({ onProfileChange }) {
                 }}
                 className="px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 cursor-pointer"
               >
-                Use photo
+                Usar foto
               </button>
             </div>
           </div>

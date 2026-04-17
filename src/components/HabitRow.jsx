@@ -27,7 +27,7 @@ export default function HabitRow({
         <div className="text-sm">
           <p className="font-semibold">{habit.streak_current || 0}d</p>
           <p className="text-slate-500 dark:text-slate-300 text-xs">
-            Best {habit.streak_best || 0}d
+            Mejor {habit.streak_best || 0}d
           </p>
         </div>
       </td>
@@ -40,11 +40,11 @@ export default function HabitRow({
             className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             title={
               canManageHabits
-                ? "Edit"
-                : "You can only edit or delete habits on Sunday"
+                ? "Editar"
+                : "Solo puedes editar o eliminar hábitos los domingos"
             }
           >
-            Edit
+            Editar
           </button>
 
           <button
@@ -53,11 +53,11 @@ export default function HabitRow({
             className="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 dark:border-red-700 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             title={
               canManageHabits
-                ? "Delete"
-                : "You can only edit or delete habits on Sunday"
+                ? "Eliminar"
+                : "Solo puedes editar o eliminar hábitos los domingos"
             }
           >
-            Delete
+            Eliminar
           </button>
         </div>
       </td>

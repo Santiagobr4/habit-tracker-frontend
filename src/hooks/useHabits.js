@@ -46,7 +46,7 @@ const getWeekStartFromIsoDate = (isoDate) => {
  * Provides weekly matrix data, tracker metrics, and mutation handlers
  * while keeping UI components focused on rendering concerns.
  */
-export const useHabits = () => {
+export const useHabits = ({ onDataChanged } = {}) => {
   const [data, setData] = useState([]);
   const [dates, setDates] = useState([]);
   const [trackerMetrics, setTrackerMetrics] = useState(null);
@@ -86,7 +86,7 @@ export const useHabits = () => {
       }
     } catch (err) {
       console.error("Fetch error:", err);
-      setError("Failed to load data");
+      setError("No pudimos cargar tus datos");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -162,7 +162,7 @@ export const useHabits = () => {
         return {
           success: false,
           type: "error",
-          message: "You can only update logs for today.",
+          message: "Solo puedes actualizar registros del día de hoy.",
         };
       }
 
@@ -170,12 +170,14 @@ export const useHabits = () => {
         return {
           success: false,
           type: "error",
-          message: "You cannot mark a habit as done before that date.",
+          message:
+            "No puedes marcar un hábito como completado antes de ese día.",
         };
       }
 
       await updateLog(habitId, date, newStatus);
       await fetchData();
+      onDataChanged?.();
 
       return { success: true };
     } catch (err) {
@@ -183,7 +185,7 @@ export const useHabits = () => {
       return {
         success: false,
         type: "error",
-        message: getApiErrorMessage(err, "Could not update habit status."),
+        message: getApiErrorMessage(err, "No pudimos actualizar el estado."),
       };
     }
   };
@@ -192,12 +194,13 @@ export const useHabits = () => {
     try {
       await createHabit(habit);
       await fetchData();
+      onDataChanged?.();
       return { success: true };
     } catch (err) {
       console.error("Create error:", err);
       return {
         success: false,
-        message: getApiErrorMessage(err, "Could not create habit."),
+        message: getApiErrorMessage(err, "No pudimos crear el hábito"),
       };
     }
   };
@@ -206,12 +209,13 @@ export const useHabits = () => {
     try {
       await updateHabit(id, habit);
       await fetchData();
+      onDataChanged?.();
       return { success: true };
     } catch (err) {
       console.error("Edit error:", err);
       return {
         success: false,
-        message: getApiErrorMessage(err, "Could not update habit."),
+        message: getApiErrorMessage(err, "No pudimos actualizar el hábito"),
       };
     }
   };
@@ -220,12 +224,13 @@ export const useHabits = () => {
     try {
       await deleteHabit(id);
       await fetchData();
+      onDataChanged?.();
       return { success: true };
     } catch (err) {
       console.error("Delete error:", err);
       return {
         success: false,
-        message: getApiErrorMessage(err, "Could not delete habit."),
+        message: getApiErrorMessage(err, "No pudimos eliminar el hábito"),
       };
     }
   };

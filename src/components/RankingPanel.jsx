@@ -28,9 +28,9 @@ const formatLeaderNames = (leaders) => {
   if (!leaders.length) return "";
   if (leaders.length === 1) return leaders[0].display_name;
   if (leaders.length === 2) {
-    return `${leaders[0].display_name} and ${leaders[1].display_name}`;
+    return `${leaders[0].display_name} y ${leaders[1].display_name}`;
   }
-  return `${leaders[0].display_name}, ${leaders[1].display_name} and others`;
+  return `${leaders[0].display_name}, ${leaders[1].display_name} y otros`;
 };
 
 const getMetricValue = (row, metricKey) => {
@@ -39,9 +39,6 @@ const getMetricValue = (row, metricKey) => {
   return row.historical_completion;
 };
 
-/**
- * Build a contextual leaderboard insight card for a metric window.
- */
 const buildHighlightInsight = ({
   metricKey,
   title,
@@ -53,18 +50,18 @@ const buildHighlightInsight = ({
   const perfectNote =
     perfectCount > 0
       ? metricLabel === "day"
-        ? " A perfect score is already on the board today."
+        ? " Ya hay un puntaje perfecto hoy."
         : metricLabel === "week"
-          ? " A perfect weekly run is already in play."
-          : " A perfect all-time standard has already been set."
+          ? " Ya hay una semana perfecta en juego."
+          : " Ya se marcó un estándar perfecto histórico."
       : "";
 
   const noPerfectNote =
     metricLabel === "day"
-      ? " No perfect score yet today."
+      ? " Aún no hay puntaje perfecto hoy."
       : metricLabel === "week"
-        ? " No perfect weekly run yet."
-        : " No perfect all-time score yet.";
+        ? " Aún no hay semana perfecta."
+        : " Aún no hay puntaje perfecto histórico.";
 
   const score = highlight?.score;
   const leaders = highlight?.leaders || [];
@@ -92,7 +89,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `No clear leaderboard signal yet for ${metricLabel.toLowerCase()}.`,
+      text: `Aún no hay una señal clara en la clasificación para ${metricLabel.toLowerCase()}.`,
       tone: "neutral",
     };
   }
@@ -102,7 +99,7 @@ const buildHighlightInsight = ({
       return {
         metricKey,
         title,
-        text: "Everyone is tied at 100%. It is a dead heat right now, and consistency will decide it.",
+        text: "Todos están empatados al 100%. Es un empate total por ahora y la constancia lo va a definir.",
         tone: "neutral",
       };
     }
@@ -110,7 +107,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `Everyone is tied at ${formatPercent(score)}. Any small win can change the order.${perfectNote}`,
+      text: `Todos están empatados en ${formatPercent(score)}. Un pequeño avance puede cambiar el orden.${perfectNote}`,
       tone: "neutral",
     };
   }
@@ -120,7 +117,7 @@ const buildHighlightInsight = ({
       return {
         metricKey,
         title,
-        text: `${formatLeaderNames(leaders)} share a perfect lead. It is neck and neck at the top.`,
+        text: `${formatLeaderNames(leaders)} comparten un liderato perfecto. La punta está muy peleada.`,
         tone: "info",
       };
     }
@@ -128,7 +125,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `${formatLeaderNames(leaders)} are tied at ${formatPercent(score)}. The top spot is still up for grabs.${perfectNote}`,
+      text: `${formatLeaderNames(leaders)} están empatados en ${formatPercent(score)}. El primer lugar sigue abierto.${perfectNote}`,
       tone: "info",
     };
   }
@@ -138,7 +135,7 @@ const buildHighlightInsight = ({
       return {
         metricKey,
         title,
-        text: `${leaders[0].display_name} sets the pace at 100%, with ${firstChaser.display_name} chasing at ${formatPercent(chaserScore)}.`,
+        text: `${leaders[0].display_name} marca el ritmo con 100%, y ${firstChaser.display_name} lo sigue con ${formatPercent(chaserScore)}.`,
         tone: "good",
       };
     }
@@ -146,7 +143,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `${leaders[0].display_name} is alone at the top with a perfect score.`,
+      text: `${leaders[0].display_name} lidera en solitario con puntaje perfecto.`,
       tone: "good",
     };
   }
@@ -155,7 +152,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `${leaders[0].display_name} leads at ${formatPercent(score)}, with only a narrow margin.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
+      text: `${leaders[0].display_name} lidera con ${formatPercent(score)}, con una ventaja mínima.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
       tone: "good",
     };
   }
@@ -164,7 +161,7 @@ const buildHighlightInsight = ({
     return {
       metricKey,
       title,
-      text: `${leaders[0].display_name} leads with ${formatPercent(score)} and has built real separation.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
+      text: `${leaders[0].display_name} lidera con ${formatPercent(score)} y ya abrió una diferencia clara.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
       tone: "good",
     };
   }
@@ -172,7 +169,7 @@ const buildHighlightInsight = ({
   return {
     metricKey,
     title,
-    text: `${leaders[0].display_name} leads with ${formatPercent(score)}. The race is still active.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
+    text: `${leaders[0].display_name} lidera con ${formatPercent(score)}. La competencia sigue abierta.${perfectCount > 0 ? perfectNote : noPerfectNote}`,
     tone: "good",
   };
 };
@@ -195,10 +192,7 @@ const insightBadgeClass = {
   neutral: "text-slate-600 dark:text-slate-300",
 };
 
-/**
- * Ranking panel showing leaderboard table and scenario-aware insight cards.
- */
-export default function RankingPanel() {
+export default function RankingPanel({ refreshVersion = 0 }) {
   const [ranking, setRanking] = useState([]);
   const [highlights, setHighlights] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -220,7 +214,7 @@ export default function RankingPanel() {
         }
       } catch {
         if (!isCancelled) {
-          setError("Could not load ranking.");
+          setError("No pudimos cargar la clasificación.");
         }
       } finally {
         if (!isCancelled) {
@@ -234,7 +228,7 @@ export default function RankingPanel() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [refreshVersion]);
 
   const rankingInsights = useMemo(() => {
     const dailyPerfect = ranking.filter(
@@ -250,26 +244,26 @@ export default function RankingPanel() {
     return [
       buildHighlightInsight({
         metricKey: "daily",
-        title: "Daily leader",
+        title: "Líder diario",
         highlight: highlights?.daily,
         perfectCount: dailyPerfect,
-        metricLabel: "day",
+        metricLabel: "dia",
         ranking,
       }),
       buildHighlightInsight({
         metricKey: "weekly",
-        title: "Weekly leader",
+        title: "Líder semanal",
         highlight: highlights?.weekly,
         perfectCount: weeklyPerfect,
-        metricLabel: "week",
+        metricLabel: "semana",
         ranking,
       }),
       buildHighlightInsight({
         metricKey: "historical",
-        title: "All-time completion leader",
+        title: "Líder histórico de cumplimiento",
         highlight: highlights?.historical,
         perfectCount: historicalPerfect,
-        metricLabel: "all-time",
+        metricLabel: "historico",
         ranking,
       }),
     ];
@@ -278,7 +272,7 @@ export default function RankingPanel() {
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
-        <LoadingSpinner label="Loading ranking..." />
+        <LoadingSpinner label="Cargando clasificación..." />
       </div>
     );
   }
@@ -295,16 +289,15 @@ export default function RankingPanel() {
     <div className="rounded-2xl border border-slate-200/80 bg-white/90 dark:bg-slate-900/80 dark:border-slate-700 p-6 shadow-sm">
       <div className="mb-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-linear-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold">Community ranking</h2>
+          <h2 className="text-xl font-semibold">Clasificación</h2>
 
           <span className="text-xs font-semibold uppercase tracking-wide rounded-full px-2.5 py-1 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-            Live period
+            Período actual
           </span>
         </div>
 
         <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
-          Ranking based on current day, current week, and current month
-          completion.
+          Basada en tu cumplimiento diario, semanal y mensual.
         </p>
       </div>
 
@@ -329,11 +322,11 @@ export default function RankingPanel() {
           <thead>
             <tr className="text-slate-500 text-sm border-b border-slate-200 dark:border-slate-700">
               <th className="py-2">#</th>
-              <th className="py-2">User</th>
-              <th className="py-2">Daily</th>
-              <th className="py-2">Weekly</th>
-              <th className="py-2">Monthly</th>
-              <th className="py-2">All-time</th>
+              <th className="py-2">Usuario</th>
+              <th className="py-2">Diario</th>
+              <th className="py-2">Semanal</th>
+              <th className="py-2">Mensual</th>
+              <th className="py-2">Histórico</th>
             </tr>
           </thead>
           <tbody>

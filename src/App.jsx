@@ -3,6 +3,8 @@ import {
   clearAuthTokens,
   fetchProfile,
   getStoredAccessToken,
+  logout,
+  refreshAccessToken,
 } from "./api/auth";
 import AuthPanel from "./components/AuthPanel";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -23,6 +25,7 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState("");
   const [section, setSection] = useState("tracker");
+  const [metricsRefreshVersion, setMetricsRefreshVersion] = useState(0);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -47,14 +50,14 @@ function App() {
     let isCancelled = false;
 
     const loadProfile = async () => {
-      if (!isAuthenticated) {
-        if (!isCancelled) {
-          setProfile(null);
-        }
-        return;
-      }
-
       try {
+        if (!isAuthenticated) {
+          await refreshAccessToken();
+          if (!isCancelled) {
+            setIsAuthenticated(true);
+          }
+        }
+
         if (!isCancelled) {
           setProfileError("");
         }
@@ -67,7 +70,9 @@ function App() {
           clearAuthTokens();
           setIsAuthenticated(false);
           setProfile(null);
-          setProfileError("Session expired. Please sign in again.");
+          if (isAuthenticated) {
+            setProfileError("Tu sesión expiró. Inicia sesión de nuevo.");
+          }
         }
       }
     };
@@ -83,11 +88,15 @@ function App() {
     setIsAuthenticated(true);
   };
 
-  const handleLogout = () => {
-    clearAuthTokens();
+  const handleLogout = async () => {
+    await logout();
     setIsAuthenticated(false);
     setProfile(null);
     setShowLogoutConfirm(false);
+  };
+
+  const notifyMetricsChanged = () => {
+    setMetricsRefreshVersion((prev) => prev + 1);
   };
 
   const themeButtonClass = (mode) => {
@@ -100,9 +109,9 @@ function App() {
   };
 
   const displayName =
-    profile?.first_name?.trim() || profile?.username || "User";
+    profile?.first_name?.trim() || profile?.username || "Usuario";
   const avatarSrc = profile?.avatar_file_url || defaultAvatar;
-  const todayLabel = new Intl.DateTimeFormat("en-US", {
+  const todayLabel = new Intl.DateTimeFormat("es-419", {
     weekday: "short",
     month: "long",
     day: "numeric",
@@ -111,15 +120,15 @@ function App() {
   const renderSection = () => {
     if (section === "history") {
       return (
-        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
-          <HistoryPanel />
+        <Suspense fallback={<LoadingSpinner label="Cargando sección..." />}>
+          <HistoryPanel refreshVersion={metricsRefreshVersion} />
         </Suspense>
       );
     }
 
     if (section === "profile") {
       return (
-        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
+        <Suspense fallback={<LoadingSpinner label="Cargando sección..." />}>
           <ProfilePanel onProfileChange={setProfile} />
         </Suspense>
       );
@@ -127,13 +136,13 @@ function App() {
 
     if (section === "ranking") {
       return (
-        <Suspense fallback={<LoadingSpinner label="Loading section..." />}>
-          <RankingPanel />
+        <Suspense fallback={<LoadingSpinner label="Cargando sección..." />}>
+          <RankingPanel refreshVersion={metricsRefreshVersion} />
         </Suspense>
       );
     }
 
-    return <WeeklyTable />;
+    return <WeeklyTable onDataChanged={notifyMetricsChanged} />;
   };
 
   return (
@@ -143,10 +152,10 @@ function App() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">
-                Habit Tracker
+                Seguimiento de hábitos
               </h1>
               <p className="text-slate-500 dark:text-slate-300 mt-1">
-                Keep your routines consistent and measurable.
+                Haz de tus hábitos algo constante y medible.
               </p>
             </div>
 
@@ -154,25 +163,25 @@ function App() {
               <button
                 onClick={() => setTheme("light")}
                 className={themeButtonClass("light")}
-                aria-label="Light theme"
+                aria-label="Tema claro"
               >
-                Light
+                Claro
               </button>
 
               <button
                 onClick={() => setTheme("dark")}
                 className={themeButtonClass("dark")}
-                aria-label="Dark theme"
+                aria-label="Tema oscuro"
               >
-                Dark
+                Oscuro
               </button>
 
               <button
                 onClick={() => setTheme("system")}
                 className={themeButtonClass("system")}
-                aria-label="System theme"
+                aria-label="Tema del sistema"
               >
-                System
+                Sistema
               </button>
             </div>
           </div>
@@ -186,13 +195,13 @@ function App() {
               <div className="flex items-center gap-3">
                 <img
                   src={avatarSrc}
-                  alt="User avatar"
+                  alt="Avatar de usuario"
                   className="w-12 h-12 rounded-full object-cover border border-slate-300 dark:border-slate-600"
                 />
 
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-300">
-                    Signed in as
+                    Conectado como
                   </p>
                   <p className="font-semibold">{displayName}</p>
                 </div>
@@ -206,7 +215,7 @@ function App() {
                   onClick={() => setShowLogoutConfirm(true)}
                   className="px-3 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                 >
-                  Logout
+                  Cerrar sesión
                 </button>
               </div>
             </div>
@@ -220,9 +229,11 @@ function App() {
             {showLogoutConfirm && (
               <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 px-3">
                 <div className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xl">
-                  <h3 className="text-lg font-semibold">Confirm logout</h3>
+                  <h3 className="text-lg font-semibold">
+                    Confirmar cierre de sesión
+                  </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-300 mt-2">
-                    Are you sure you want to close your session?
+                    ¿Quieres cerrar sesión?
                   </p>
                   <div className="mt-5 flex justify-end gap-2">
                     <button
@@ -230,14 +241,16 @@ function App() {
                       onClick={() => setShowLogoutConfirm(false)}
                       className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                     >
-                      Cancel
+                      Cancelar
                     </button>
                     <button
                       type="button"
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout();
+                      }}
                       className="px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                     >
-                      Yes, logout
+                      Sí, cerrar sesión
                     </button>
                   </div>
                 </div>

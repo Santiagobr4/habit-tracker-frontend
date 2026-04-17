@@ -7,6 +7,7 @@ Frontend application for Habit Tracker built with React + Vite.
 This SPA consumes the Django API and provides:
 
 - Authentication (login/register)
+- HttpOnly-cookie refresh + in-memory access token auth flow
 - Weekly habit tracking
 - Historical analytics
 - Leaderboard/ranking
@@ -31,8 +32,11 @@ This SPA consumes the Django API and provides:
 Create `.env` in the frontend root:
 
 ```env
-VITE_API_BASE_URL=http://127.0.0.1:8000/api
+VITE_API_BASE_URL=http://localhost:8000/api
 ```
+
+If you switch to the production Nginx/domain setup, point this to the same-origin `/api` path or the final HTTPS API domain.
+In development, the app will prefer the current browser hostname for the API to avoid localhost/127.0.0.1 cookie mismatches.
 
 ## Run in Development
 
@@ -41,7 +45,7 @@ pnpm install
 pnpm dev
 ```
 
-Default dev URL: `http://127.0.0.1:5173`
+Default dev URL: `http://localhost:5173`
 
 ## Build for Production
 
@@ -49,6 +53,7 @@ Default dev URL: `http://127.0.0.1:5173`
 pnpm lint
 pnpm build
 pnpm preview
+pnpm test:run
 ```
 
 ## Folder Structure
@@ -68,6 +73,7 @@ This app expects the following backend endpoints:
 - `POST /api/register/`
 - `POST /api/token/`
 - `POST /api/token/refresh/`
+- `POST /api/logout/`
 - `GET/PATCH /api/profile/`
 - `GET/POST/PATCH/DELETE /api/habits/`
 - `GET /api/habits/weekly/`
@@ -79,9 +85,16 @@ This app expects the following backend endpoints:
 ## Deployment Notes
 
 - Build static assets with `pnpm build`.
-- Serve `dist` with Nginx or CDN.
-- Route API calls to backend service through reverse proxy.
+- In Docker deployment, frontend image uses Nginx (`nginx/default.conf`) to:
+  - serve `dist`
+  - proxy `/api/` requests to backend service
 - Configure strict CSP and HTTPS in production.
+
+## Authentication Notes
+
+- Access token is kept in memory only (not localStorage/sessionStorage).
+- Refresh token is managed by backend cookie (HttpOnly).
+- On app bootstrap, frontend requests `/api/token/refresh/` to restore session.
 
 ## Quality and Standards
 

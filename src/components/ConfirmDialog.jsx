@@ -8,14 +8,14 @@ export default function ConfirmDialog({ open, onClose, onConfirm, text }) {
 
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-3 py-2 bg-gray-300 rounded">
-            Cancel
+            Cancelar
           </button>
 
           <button
             onClick={onConfirm}
             className="px-3 py-2 bg-red-500 text-white rounded"
           >
-            Yes
+            Sí
           </button>
         </div>
       </div>

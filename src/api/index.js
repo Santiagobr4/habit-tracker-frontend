@@ -1,10 +1,25 @@
 import axios from "axios";
-
-const ACCESS_TOKEN_KEY = "habit_tracker_access_token";
-const REFRESH_TOKEN_KEY = "habit_tracker_refresh_token";
+import {
+  clearAccessToken,
+  getAccessToken,
+  setAccessToken,
+} from "./authSession";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api",
+  baseURL: (() => {
+    const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+    if (configuredBaseUrl && !import.meta.env.DEV) {
+      return configuredBaseUrl;
+    }
+
+    if (typeof window !== "undefined") {
+      return `${window.location.protocol}//${window.location.hostname}:8000/api`;
+    }
+
+    return configuredBaseUrl || "http://localhost:8000/api";
+  })(),
+  withCredentials: true,
 });
 
 let isRefreshing = false;
@@ -16,12 +31,11 @@ const processPendingRequests = (token) => {
 };
 
 const clearStoredTokens = () => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  clearAccessToken();
 };
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  const token = getAccessToken();
 
   if (token) {
     config.headers = config.headers ?? {};
@@ -48,12 +62,6 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const refresh = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!refresh) {
-      clearStoredTokens();
-      return Promise.reject(error);
-    }
-
     originalRequest._retry = true;
 
     if (isRefreshing) {
@@ -76,13 +84,12 @@ api.interceptors.response.use(
     try {
       const refreshResponse = await axios.post(
         `${api.defaults.baseURL}/token/refresh/`,
-        {
-          refresh,
-        },
+        {},
+        { withCredentials: true },
       );
 
       const newAccessToken = refreshResponse.data.access;
-      localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+      setAccessToken(newAccessToken);
       processPendingRequests(newAccessToken);
 
       originalRequest.headers = originalRequest.headers ?? {};
@@ -99,5 +106,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
-export { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY };

@@ -1,14 +1,14 @@
-const LONG_DAY_FORMATTER = new Intl.DateTimeFormat("en-US", {
+const LONG_DAY_FORMATTER = new Intl.DateTimeFormat("es-419", {
   weekday: "long",
   timeZone: "UTC",
 });
 
-const SHORT_DAY_FORMATTER = new Intl.DateTimeFormat("en-US", {
+const SHORT_DAY_FORMATTER = new Intl.DateTimeFormat("es-419", {
   weekday: "short",
   timeZone: "UTC",
 });
 
-const READABLE_DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+const READABLE_DATE_FORMATTER = new Intl.DateTimeFormat("es-419", {
   month: "long",
   day: "numeric",
   timeZone: "UTC",
@@ -21,17 +21,28 @@ export const getIsoDateLabel = (isoDate) => {
 
 export const getIsoDayNameLong = (isoDate) => {
   if (!isoDate) return "";
-  return LONG_DAY_FORMATTER.format(new Date(`${isoDate}T00:00:00Z`));
+  const label = LONG_DAY_FORMATTER.format(new Date(`${isoDate}T00:00:00Z`));
+  return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
 export const getIsoDayNameShort = (isoDate) => {
   if (!isoDate) return "";
-  return SHORT_DAY_FORMATTER.format(new Date(`${isoDate}T00:00:00Z`));
+  const label = SHORT_DAY_FORMATTER.format(new Date(`${isoDate}T00:00:00Z`));
+  return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
 export const capitalizeDayCode = (value) => {
   if (!value) return "";
-  return value.slice(0, 1).toUpperCase() + value.slice(1, 3).toLowerCase();
+  const dayMap = {
+    monday: "Lun",
+    tuesday: "Mar",
+    wednesday: "Mié",
+    thursday: "Jue",
+    friday: "Vie",
+    saturday: "Sáb",
+    sunday: "Dom",
+  };
+  return dayMap[value.toLowerCase()] || value;
 };
 
 export const formatReadableDate = (isoDate) => {
@@ -45,5 +56,5 @@ export const formatReadableDateRange = (startDate, endDate) => {
 
   if (!startLabel || !endLabel) return "";
 
-  return `${startLabel} to ${endLabel}`;
+  return `${startLabel} a ${endLabel}`;
 };
